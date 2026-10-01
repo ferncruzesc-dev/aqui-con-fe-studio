@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A question — The Constellation</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="index.html" style="text-decoration:none;">aQui <span>con fe</span> <em>constellation</em></a>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="hero">
+      <p class="kicker"><a href="index.html" class="link">← The Constellation</a></p>
+      <p class="kicker" style="margin-top: 0.5em;">The Question</p>
+      <h1 style="font-style: italic;">{{ question.question_text }}</h1>
+      {% if question.why_asking %}
+      <p class="why">{{ question.why_asking }}</p>
+      {% endif %}
+    </section>
+
+    <section>
+      <h2>Follow the constellation</h2>
+      {% if constellation.axes %}
+      <div class="chips">
+        {% for a in constellation.axes %}
+        <a class="chip" href="{{ axis_pages[a.id] }}">{{ a.name }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </section>
+
+    {% if constellation.materials %}
+    <h3 class="group-title">Materials</h3>
+    <ul class="item-list">
+      {% for it in constellation.materials %}
+      <li>
+        <span class="item-title">{{ it.title }}</span>
+        <span class="meta">{{ it.kind }}</span>
+        {% if it.excerpt %}<p class="excerpt">{{ it.excerpt }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if constellation.projects %}
+    <h3 class="group-title">Projects</h3>
+    <ul class="item-list">
+      {% for it in constellation.projects %}
+      <li>
+        <span class="item-title">{{ it.title }}</span>
+        <span class="meta">{{ it.status }}</span>
+        {% if it.excerpt %}<p class="excerpt">{{ it.excerpt }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if constellation.pieces %}
+    <h3 class="group-title">Room pieces</h3>
+    <ul class="item-list">
+      {% for it in constellation.pieces %}
+      <li>
+        <span class="item-title">{{ it.title }}</span>
+        <span class="meta">{{ it.room_name }}{% if it.kind %} · {{ it.kind }}{% endif %}</span>
+        {% if it.excerpt %}<p class="excerpt">{{ it.excerpt }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if not constellation.materials and not constellation.projects and not constellation.pieces %}
+    <p class="muted">This question's public constellation is still forming.</p>
+    {% endif %}
+  </main>
+  <footer class="wrap site-footer">
+    <p>Scholarship · Faith · Presence · Art · Community</p>
+  </footer>
+</body>
+</html>

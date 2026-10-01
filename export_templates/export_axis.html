@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ axis.name }} — The Constellation</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="index.html" style="text-decoration:none;">aQui <span>con fe</span> <em>constellation</em></a>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="hero">
+      <p class="kicker"><a href="index.html" class="link">← The Constellation</a></p>
+      <h1>{{ axis.name }}</h1>
+      <p class="lede"><em>{{ axis.tagline }}</em> — {{ axis.description }}</p>
+    </section>
+
+    {% if items.questions %}
+    <h3 class="group-title">Questions</h3>
+    <ul class="item-list">
+      {% for it in items.questions %}
+      <li>
+        <a href="{{ question_page(it.id) }}" class="item-title">{{ it.question_text }}</a>
+        <span class="meta">{{ it.status }}</span>
+        {% if it.excerpt %}<p class="excerpt">{{ it.excerpt }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if items.materials %}
+    <h3 class="group-title">Materials</h3>
+    <ul class="item-list">
+      {% for it in items.materials %}
+      <li>
+        <span class="item-title">{{ it.title }}</span>
+        <span class="meta">{{ it.kind }}</span>
+        {% if it.excerpt %}<p class="excerpt">{{ it.excerpt }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if items.projects %}
+    <h3 class="group-title">Projects</h3>
+    <ul class="item-list">
+      {% for it in items.projects %}
+      <li>
+        <span class="item-title">{{ it.title }}</span>
+        <span class="meta">{{ it.status }}</span>
+        {% if it.excerpt %}<p class="excerpt">{{ it.excerpt }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if items.pieces %}
+    <h3 class="group-title">Room pieces</h3>
+    <ul class="item-list">
+      {% for it in items.pieces %}
+      <li>
+        <span class="item-title">{{ it.title }}</span>
+        <span class="meta">{{ it.room_name }}{% if it.kind %} · {{ it.kind }}{% endif %}</span>
+        {% if it.excerpt %}<p class="excerpt">{{ it.excerpt }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if not items.questions and not items.materials and not items.projects and not items.pieces %}
+    <p class="muted">Nothing public here yet.</p>
+    {% endif %}
+  </main>
+  <footer class="wrap site-footer">
+    <p>Scholarship · Faith · Presence · Art · Community</p>
+  </footer>
+</body>
+</html>
