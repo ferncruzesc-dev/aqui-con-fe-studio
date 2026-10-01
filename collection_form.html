@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Rename collection — aQui con fe Studio{% endblock %}
+{% block content %}
+<p class="kicker">Archive</p>
+<h1>Rename collection</h1>
+<form method="post" action="{{ url_for('collection_edit', collection_id=collection.id) }}">
+  <label>Name
+    <input type="text" name="name" value="{{ collection.name }}" required />
+  </label>
+  <label>Description
+    <input type="text" name="description" value="{{ collection.description }}" />
+  </label>
+  <div class="form-actions">
+    <button type="submit" class="btn">Save</button>
+    <a href="{{ url_for('archive') }}" class="btn ghost">Cancel</a>
+  </div>
+</form>
+{% endblock %}

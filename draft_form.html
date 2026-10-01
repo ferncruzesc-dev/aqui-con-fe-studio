@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if draft else 'New' }} draft — {{ room_name }}{% endblock %}
+{% block content %}
+<p class="kicker">{{ room_name }}</p>
+<h1>{{ 'Edit draft' if draft else 'New draft' }}</h1>
+<form method="post" action="{{ url_for('draft_edit', draft_id=draft.id) if draft else url_for('draft_new', room=room_slug) }}">
+  <label>Title
+    <input type="text" name="title" value="{{ draft.title if draft else '' }}" placeholder="Untitled" />
+  </label>
+  {% if room_slug == 'video-diary' %}
+  <label>Look <span class="hint">— makeup / expression concept</span>
+    <input type="text" name="look" value="{{ extra.look }}" placeholder="e.g. gold halo eye, bare face…" />
+  </label>
+  <label>Script / ideas
+    <textarea name="script" rows="5" placeholder="Beats, lines, shots…">{{ extra.script }}</textarea>
+  </label>
+  {% endif %}
+  <div class="form-row">
+    <label>Status
+      <select name="status">
+        <option value="draft" {% if not draft or draft.status == 'draft' %}selected{% endif %}>Draft</option>
+        <option value="ready" {% if draft and draft.status == 'ready' %}selected{% endif %}>Ready</option>
+      </select>
+    </label>
+  </div>
+  <label>{{ 'Notes' if room_slug == 'video-diary' else 'Body' }}
+    <textarea name="body" rows="12" placeholder="Write…">{{ draft.body if draft else '' }}</textarea>
+  </label>
+  <div class="form-actions">
+    <button type="submit" class="btn">Save</button>
+    <a href="{{ url_for('room_page', room=room_slug) }}" class="btn ghost">Cancel</a>
+    {% if draft %}
+    <a href="{{ url_for('draft_delete', draft_id=draft.id) }}" class="btn danger-ghost">Delete</a>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

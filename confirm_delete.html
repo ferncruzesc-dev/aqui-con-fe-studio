@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Confirm delete — aQui con fe Studio{% endblock %}
+{% block content %}
+<div class="auth-card">
+  <p class="kicker">Are you sure?</p>
+  <h1>Delete this?</h1>
+  <p class="lede">You are about to permanently delete the {{ item_label }}. This cannot be undone.</p>
+  <form method="post">
+    <div class="form-actions">
+      <button type="submit" class="btn danger">Yes, delete it</button>
+      <a href="{{ cancel_url }}" class="btn ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

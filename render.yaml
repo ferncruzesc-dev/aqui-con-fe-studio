@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: aqui-con-fe-studio
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    disk:
+      name: studio-data
+      mountPath: /var/studio-data
+      sizeGB: 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: STUDIO_SECRET_KEY
+        generateValue: true
+      - key: STUDIO_DATA_DIR
+        value: /var/studio-data

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if entry else 'New' }} journal entry — aQui con fe Studio{% endblock %}
+{% block content %}
+<p class="kicker">Journal</p>
+<h1>{{ 'Edit entry' if entry else 'New entry' }}</h1>
+<form method="post" action="{{ url_for('journal_edit', entry_id=entry.id) if entry else url_for('journal_new') }}">
+  <label>Title
+    <input type="text" name="title" value="{{ entry.title if entry else '' }}" placeholder="Untitled" />
+  </label>
+  <div class="form-row">
+    <label>Type
+      <select name="type">
+        {% for t in journal_types %}
+        <option value="{{ t }}" {% if entry and entry.type == t %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Date
+      <input type="date" name="entry_date" value="{{ entry.entry_date if entry else today }}" />
+    </label>
+    <label>Status
+      <select name="status">
+        <option value="draft" {% if not entry or entry.status == 'draft' %}selected{% endif %}>Draft</option>
+        <option value="ready" {% if entry and entry.status == 'ready' %}selected{% endif %}>Ready</option>
+      </select>
+    </label>
+  </div>
+  <label>Body
+    <textarea name="body" rows="12" placeholder="Write…">{{ entry.body if entry else '' }}</textarea>
+  </label>
+  <div class="form-actions">
+    <button type="submit" class="btn">Save</button>
+    <a href="{{ url_for('journal_list') }}" class="btn ghost">Cancel</a>
+    {% if entry %}
+    <a href="{{ url_for('journal_delete', entry_id=entry.id) }}" class="btn danger-ghost">Delete</a>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Home — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="kicker">a living space for scholarship, faith, and the social arts</p>
+  <h1>Here, with faith.</h1>
+</section>
+
+<section class="capture card">
+  <h2>Quick capture</h2>
+  <p class="muted">A thought, a line, a fragment — saved as a field-notes draft.</p>
+  <form method="post" action="{{ url_for('quick_capture') }}">
+    <textarea name="body" rows="3" placeholder="Write it before it leaves you…" required></textarea>
+    <div class="form-actions">
+      <button type="submit" class="btn">Save as draft</button>
+    </div>
+  </form>
+</section>
+
+<section class="stats">
+  <div class="stat"><span class="stat-num">{{ counts.journal }}</span><span class="stat-label">journal entries</span></div>
+  <div class="stat"><span class="stat-num">{{ counts.pieces }}</span><span class="stat-label">archive pieces</span></div>
+  <div class="stat"><span class="stat-num">{{ counts.drafts }}</span><span class="stat-label">room drafts</span></div>
+  <div class="stat"><span class="stat-num">{{ counts.ready }}</span><span class="stat-label">marked ready</span></div>
+</section>
+
+<div class="columns">
+  <section>
+    <div class="section-head">
+      <h2>Recent journal</h2>
+      <a href="{{ url_for('journal_list') }}" class="link">All →</a>
+    </div>
+    {% if recent_journal %}
+    <ul class="item-list">
+      {% for e in recent_journal %}
+      <li>
+        <a href="{{ url_for('journal_edit', entry_id=e.id) }}">{{ e.title }}</a>
+        <span class="meta">{{ e.type }} · {{ e.entry_date }} · <span class="pill {{ e.status }}">{{ e.status }}</span></span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">Nothing yet. Capture something above.</p>
+    {% endif %}
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Recent archive pieces</h2>
+      <a href="{{ url_for('archive') }}" class="link">All →</a>
+    </div>
+    {% if recent_pieces %}
+    <ul class="item-list">
+      {% for p in recent_pieces %}
+      <li>
+        <a href="{{ url_for('piece_edit', piece_id=p.id) }}">{{ p.title }}</a>
+        <span class="meta">{{ p.type }}{% if p.collection_name %} · {{ p.collection_name }}{% endif %} · <span class="pill {{ p.status }}">{{ p.status }}</span></span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No pieces yet.</p>
+    {% endif %}
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Recent room drafts</h2>
+    </div>
+    {% if recent_drafts %}
+    <ul class="item-list">
+      {% for d in recent_drafts %}
+      <li>
+        <a href="{{ url_for('draft_edit', draft_id=d.id) }}">{{ d.title }}</a>
+        <span class="meta">{{ room_names.get(d.room, d.room) }} · <span class="pill {{ d.status }}">{{ d.status }}</span></span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No drafts yet.</p>
+    {% endif %}
+    <p class="room-links">
+      <a href="{{ url_for('room_page', room='omg-moments') }}" class="link">OMG! moments →</a><br />
+      <a href="{{ url_for('room_page', room='video-diary') }}" class="link">Video diary →</a><br />
+      <a href="{{ url_for('room_page', room='come-for-me') }}" class="link">coMe for Me →</a>
+    </p>
+  </section>
+</div>
+{% endblock %}

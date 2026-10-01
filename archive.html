@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Archive — aQui con fe Studio{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="kicker">A home for what deserves to be remembered</p>
+    <h1>Archive</h1>
+  </div>
+  <a href="{{ url_for('piece_new') }}" class="btn">+ New piece</a>
+</div>
+
+<section>
+  <h2>Collections</h2>
+  <form method="post" action="{{ url_for('collection_new') }}" class="inline-form">
+    <input type="text" name="name" placeholder="New collection name…" required aria-label="Collection name" />
+    <input type="text" name="description" placeholder="Description (optional)" aria-label="Collection description" />
+    <button type="submit" class="btn small">Add</button>
+  </form>
+  {% if grouped %}
+  <ul class="item-list">
+    {% for col, pieces in grouped %}
+    <li>
+      <strong>{{ col.name }}</strong>
+      {% if col.description %}<span class="meta"> — {{ col.description }}</span>{% endif %}
+      <span class="row-actions">
+        <a href="{{ url_for('piece_new', collection_id=col.id) }}" class="link">+ piece</a>
+        <a href="{{ url_for('collection_edit', collection_id=col.id) }}" class="link">rename</a>
+        <a href="{{ url_for('collection_delete', collection_id=col.id) }}" class="link danger">delete</a>
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">No collections yet — create one above, or file pieces uncategorized.</p>
+  {% endif %}
+</section>
+
+<section>
+  <div class="section-head">
+    <h2>Pieces</h2>
+    <form method="get" action="{{ url_for('archive') }}" class="filters inline">
+      <select name="type" onchange="this.form.submit()" aria-label="Filter by type">
+        <option value="">All types</option>
+        {% for t in piece_types %}
+        <option value="{{ t }}" {% if t == type_filter %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+  {% for col, pieces in grouped %}
+    {% if pieces %}
+    <h3 class="group-title">{{ col.name }}</h3>
+    <ul class="item-list cards">
+      {% for p in pieces %}
+      <li class="card-row">
+        <div>
+          <a href="{{ url_for('piece_edit', piece_id=p.id) }}" class="item-title">{{ p.title }}</a>
+          <span class="meta">{{ p.type }}</span>
+        </div>
+        <span class="pill {{ p.status }}">{{ p.status }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  {% endfor %}
+  {% if uncategorized %}
+  <h3 class="group-title">Uncategorized</h3>
+  <ul class="item-list cards">
+    {% for p in uncategorized %}
+    <li class="card-row">
+      <div>
+        <a href="{{ url_for('piece_edit', piece_id=p.id) }}" class="item-title">{{ p.title }}</a>
+        <span class="meta">{{ p.type }}</span>
+      </div>
+      <span class="pill {{ p.status }}">{{ p.status }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% if not grouped and not uncategorized %}
+  <p class="muted">No pieces yet. <a href="{{ url_for('piece_new') }}" class="link">Write one →</a></p>
+  {% endif %}
+</section>
+{% endblock %}

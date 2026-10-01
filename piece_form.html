@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if piece else 'New' }} piece — aQui con fe Studio{% endblock %}
+{% block content %}
+<p class="kicker">Archive</p>
+<h1>{{ 'Edit piece' if piece else 'New piece' }}</h1>
+<form method="post" action="{{ url_for('piece_edit', piece_id=piece.id) if piece else url_for('piece_new') }}">
+  <label>Title
+    <input type="text" name="title" value="{{ piece.title if piece else '' }}" placeholder="Untitled" />
+  </label>
+  <div class="form-row">
+    <label>Type
+      <select name="type">
+        {% for t in piece_types %}
+        <option value="{{ t }}" {% if piece and piece.type == t %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Collection
+      <select name="collection_id">
+        <option value="">Uncategorized</option>
+        {% for c in collections %}
+        <option value="{{ c.id }}" {% if preselect == (c.id|string) %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Status
+      <select name="status">
+        <option value="draft" {% if not piece or piece.status == 'draft' %}selected{% endif %}>Draft</option>
+        <option value="ready" {% if piece and piece.status == 'ready' %}selected{% endif %}>Ready</option>
+      </select>
+    </label>
+  </div>
+  <label>Body
+    <textarea name="body" rows="14" placeholder="Write…">{{ piece.body if piece else '' }}</textarea>
+  </label>
+  <div class="form-actions">
+    <button type="submit" class="btn">Save</button>
+    <a href="{{ url_for('archive') }}" class="btn ghost">Cancel</a>
+    {% if piece %}
+    <a href="{{ url_for('piece_delete', piece_id=piece.id) }}" class="btn danger-ghost">Delete</a>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

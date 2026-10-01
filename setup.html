@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Set up your Studio — aQui con fe Studio{% endblock %}
+{% block content %}
+<div class="auth-card">
+  <p class="kicker">First run</p>
+  <h1>Create your Studio password</h1>
+  <p class="lede">This password protects your private writing desk. Choose something only you know.</p>
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+  <form method="post" action="{{ url_for('setup') }}">
+    <label>Password
+      <input type="password" name="password" autocomplete="new-password" minlength="8" required />
+    </label>
+    <label>Confirm password
+      <input type="password" name="confirm" autocomplete="new-password" minlength="8" required />
+    </label>
+    <div class="form-actions">
+      <button type="submit" class="btn">Create password &amp; enter</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

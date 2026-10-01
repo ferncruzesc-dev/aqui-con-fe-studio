@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ room_name }} — aQui con fe Studio{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="kicker">{{ room_tagline }}</p>
+    <h1>{{ room_name }}</h1>
+  </div>
+  <a href="{{ url_for('draft_new', room=room_slug) }}" class="btn">+ New draft</a>
+</div>
+
+<form method="get" action="{{ url_for('room_page', room=room_slug) }}" class="filters">
+  <label>Status
+    <select name="status" onchange="this.form.submit()">
+      <option value="">Draft + ready</option>
+      <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Draft</option>
+      <option value="ready" {% if status_filter == 'ready' %}selected{% endif %}>Ready</option>
+    </select>
+  </label>
+  {% if status_filter %}
+  <a href="{{ url_for('room_page', room=room_slug) }}" class="link">Clear</a>
+  {% endif %}
+</form>
+
+{% if drafts %}
+<ul class="item-list cards">
+  {% for d in drafts %}
+  <li class="card-row">
+    <div>
+      <a href="{{ url_for('draft_edit', draft_id=d.id) }}" class="item-title">{{ d.title }}</a>
+      {% if d.body %}<p class="excerpt">{{ d.body[:140] }}{% if d.body|length > 140 %}…{% endif %}</p>{% endif %}
+    </div>
+    <span class="pill {{ d.status }}">{{ d.status }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">No drafts yet. <a href="{{ url_for('draft_new', room=room_slug) }}" class="link">Start one →</a></p>
+{% endif %}
+{% endblock %}

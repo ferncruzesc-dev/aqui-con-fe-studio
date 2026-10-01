@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Journal — aQui con fe Studio{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="kicker">Field notes from the here and now</p>
+    <h1>Journal</h1>
+  </div>
+  <a href="{{ url_for('journal_new') }}" class="btn">+ New entry</a>
+</div>
+
+<form method="get" action="{{ url_for('journal_list') }}" class="filters">
+  <label>Type
+    <select name="type" onchange="this.form.submit()">
+      <option value="">All types</option>
+      {% for t in journal_types %}
+      <option value="{{ t }}" {% if t == type_filter %}selected{% endif %}>{{ t }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Status
+    <select name="status" onchange="this.form.submit()">
+      <option value="">Draft + ready</option>
+      <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Draft</option>
+      <option value="ready" {% if status_filter == 'ready' %}selected{% endif %}>Ready</option>
+    </select>
+  </label>
+  {% if type_filter or status_filter %}
+  <a href="{{ url_for('journal_list') }}" class="link">Clear</a>
+  {% endif %}
+</form>
+
+{% if entries %}
+<ul class="item-list cards">
+  {% for e in entries %}
+  <li class="card-row">
+    <div>
+      <a href="{{ url_for('journal_edit', entry_id=e.id) }}" class="item-title">{{ e.title }}</a>
+      <span class="meta">{{ e.type }} · {{ e.entry_date }}</span>
+      {% if e.body %}<p class="excerpt">{{ e.body[:140] }}{% if e.body|length > 140 %}…{% endif %}</p>{% endif %}
+    </div>
+    <span class="pill {{ e.status }}">{{ e.status }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">No entries match. <a href="{{ url_for('journal_new') }}" class="link">Write one →</a></p>
+{% endif %}
+{% endblock %}
