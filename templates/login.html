@@ -2,6 +2,7 @@
 {% block title %}Log in — aQui con fe Studio{% endblock %}
 {% block content %}
 <section class="auth-card">
+  <img src="{{ url_for('static', filename='img/hojita-enso-logo.png') }}" alt="Hojita de Agua" class="auth-mark">
   <p class="kicker">aQui con fe Studio</p>
   <h1>Welcome back</h1>
   {% if error %}<p class="error">{{ error }}</p>{% endif %}

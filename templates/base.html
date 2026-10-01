@@ -12,7 +12,7 @@
 <body>
   <header class="site-header">
     <div class="wrap header-inner">
-      <a class="brand" href="{{ url_for('dashboard') }}">aQui <span>con fe</span> <em>Studio</em></a>
+      <a class="brand" href="{{ url_for('dashboard') }}"><img src="{{ url_for('static', filename='img/hojita-ha-monogram.png') }}" alt="Hojita de Agua" class="brand-mark">aQui <span>con fe</span> <em>Studio</em></a>
       {% if session.get('user') %}
       <nav class="main-nav" aria-label="Studio sections">
         <a href="{{ url_for('dashboard') }}">Home</a>
@@ -23,6 +23,8 @@
         <a href="{{ url_for('journal_list') }}">Journal</a>
         <a href="{{ url_for('voice_list') }}">Voice</a>
         <a href="{{ url_for('serial_list') }}">Serial</a>
+        <a href="{{ url_for('poem_list') }}">Poems</a>
+        <a href="{{ url_for('story_list') }}">Stories</a>
         <a href="{{ url_for('newsletter_list') }}">Newsletter</a>
         {% for r in nav_rooms %}
         <a href="{{ url_for('room_page', key=r.key) }}">{{ r.name.split()[0] }}</a>
