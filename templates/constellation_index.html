@@ -1,0 +1,39 @@
+{% extends "public_base.html" %}
+{% block title %}The Constellation — aQui con fe{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="kicker">aQui con fe · a living archive</p>
+  <h1>The Constellation</h1>
+  <p class="lede">Eight areas of a life's work, orbiting the questions that hold them together.
+  Follow any area — or follow the question.</p>
+</section>
+
+{% if the_question %}
+<section class="question-hero">
+  <p class="kicker">The Question</p>
+  <blockquote>{{ the_question.question_text }}</blockquote>
+  <div class="form-actions">
+    <a href="{{ url_for('constellation_question', qid=the_question.id) }}" class="btn small">Follow the constellation →</a>
+  </div>
+</section>
+{% endif %}
+
+<div class="flow-arrow">QUESTION ↓</div>
+{% for tier in tiers %}
+<section class="tier">
+  <p class="tier-label">{{ tier.name }}<span class="tier-hint">{{ tier.hint }}</span></p>
+  <div class="axis-grid">
+    {% for c in tier.cards %}
+    <a class="axis-card" href="{{ url_for('constellation_axis', key=c.axis.key) }}">
+      <h3>{{ c.axis.name }}</h3>
+      <p class="tagline">{{ c.axis.tagline }}</p>
+      <p class="desc">{{ c.axis.description }}</p>
+      <span class="count">{{ c.total }} public {{ 'item' if c.total == 1 else 'items' }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% if not loop.last %}<div class="flow-arrow">↓</div>{% endif %}
+{% endfor %}
+<div class="flow-arrow">↓ NEW MATERIAL · NEW QUESTION</div>
+{% endblock %}

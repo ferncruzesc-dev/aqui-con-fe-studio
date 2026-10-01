@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Publish — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="kicker">To the world</p>
+  <h1>Publish the constellation</h1>
+  <p class="lede">Renders everything you've flagged <strong>public</strong> into a static snapshot —
+  ready to upload into the aquiconfe.org repository. Nothing private leaves the studio.</p>
+</section>
+
+<section class="card">
+  <h2>Currently public</h2>
+  <div class="stats">
+    <div class="stat"><span class="stat-num">{{ counts.questions }}</span><span class="stat-label">questions</span></div>
+    <div class="stat"><span class="stat-num">{{ counts.materials }}</span><span class="stat-label">materials</span></div>
+    <div class="stat"><span class="stat-num">{{ counts.projects }}</span><span class="stat-label">projects</span></div>
+    <div class="stat"><span class="stat-num">{{ counts.pieces }}</span><span class="stat-label">room pieces</span></div>
+  </div>
+  <form method="post">
+    <div class="form-actions">
+      <button type="submit" class="btn">Publish constellation</button>
+    </div>
+  </form>
+</section>
+
+{% if result %}
+<section class="card">
+  <h2>Published</h2>
+  <p class="muted">{{ result.count }} files written to <span class="hint">export/constellation/</span></p>
+  <ul class="item-list">
+    {% for f in result.files %}
+    <li><span class="meta">{{ f }}</span></li>
+    {% endfor %}
+  </ul>
+  <p class="hint">Copy the <strong>constellation</strong> folder into the aqui-con-fe repo (see PUBLISH_README.txt), commit, and push.</p>
+</section>
+{% endif %}
+{% endblock %}

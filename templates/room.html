@@ -1,40 +1,42 @@
 {% extends "base.html" %}
-{% block title %}{{ room_name }} — aQui con fe Studio{% endblock %}
+{% block title %}{{ room.name }} — aQui con fe Studio{% endblock %}
 {% block content %}
-<div class="page-head">
-  <div>
-    <p class="kicker">{{ room_tagline }}</p>
-    <h1>{{ room_name }}</h1>
+<section class="hero">
+  <p class="kicker">Room</p>
+  <h1>{{ room.name }}</h1>
+  <p class="lede"><em>{{ room.identity }}</em></p>
+  {% if room.description %}<p class="muted">{{ room.description }}</p>{% endif %}
+  <div class="page-head" style="margin-top: 1em;">
+    <form method="get" class="filters inline">
+      <label>Status
+        <select name="status" onchange="this.form.submit()">
+          <option value="">all</option>
+          <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>draft</option>
+          <option value="ready" {% if status_filter == 'ready' %}selected{% endif %}>ready</option>
+        </select>
+      </label>
+    </form>
+    <a href="{{ url_for('piece_new', key=room.key) }}" class="btn">New piece</a>
   </div>
-  <a href="{{ url_for('draft_new', room=room_slug) }}" class="btn">+ New draft</a>
-</div>
+</section>
 
-<form method="get" action="{{ url_for('room_page', room=room_slug) }}" class="filters">
-  <label>Status
-    <select name="status" onchange="this.form.submit()">
-      <option value="">Draft + ready</option>
-      <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Draft</option>
-      <option value="ready" {% if status_filter == 'ready' %}selected{% endif %}>Ready</option>
-    </select>
-  </label>
-  {% if status_filter %}
-  <a href="{{ url_for('room_page', room=room_slug) }}" class="link">Clear</a>
-  {% endif %}
-</form>
-
-{% if drafts %}
-<ul class="item-list cards">
-  {% for d in drafts %}
+{% if pieces %}
+<ul class="item-list">
+  {% for p in pieces %}
   <li class="card-row">
     <div>
-      <a href="{{ url_for('draft_edit', draft_id=d.id) }}" class="item-title">{{ d.title }}</a>
-      {% if d.body %}<p class="excerpt">{{ d.body[:140] }}{% if d.body|length > 140 %}…{% endif %}</p>{% endif %}
+      <a href="{{ url_for('piece_edit', pid=p.id) }}" class="item-title">{{ p.title }}</a>
+      <span class="meta">{% if p.kind %}{{ p.kind }} · {% endif %}<span class="pill {{ p.status }}">{{ p.status }}</span>{% if p.public %} <span class="pill public">public</span>{% endif %}</span>
+      {% if p.body %}<p class="excerpt">{{ p.body[:160] }}{% if p.body|length > 160 %}…{% endif %}</p>{% endif %}
     </div>
-    <span class="pill {{ d.status }}">{{ d.status }}</span>
+    <span class="row-actions">
+      <a href="{{ url_for('piece_edit', pid=p.id) }}" class="link">Edit</a>
+      <a href="{{ url_for('piece_delete', pid=p.id) }}" class="link danger">Delete</a>
+    </span>
   </li>
   {% endfor %}
 </ul>
 {% else %}
-<p class="muted">No drafts yet. <a href="{{ url_for('draft_new', room=room_slug) }}" class="link">Start one →</a></p>
+<p class="muted">No pieces in this room yet.</p>
 {% endif %}
 {% endblock %}

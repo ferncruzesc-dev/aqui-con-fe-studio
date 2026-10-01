@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Materials — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="page-head">
+    <div>
+      <p class="kicker">The archive</p>
+      <h1>Materials</h1>
+      <p class="lede">Poems, stories, essays, notes, fragments — everything the constellation is made of.</p>
+    </div>
+    <a href="{{ url_for('material_new') }}" class="btn">New material</a>
+  </div>
+  <form method="get" class="filters">
+    <label>Kind
+      <select name="kind" onchange="this.form.submit()">
+        <option value="">all</option>
+        {% for k in kinds %}
+        <option value="{{ k }}" {% if k == kind_filter %}selected{% endif %}>{{ k }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Status
+      <select name="status" onchange="this.form.submit()">
+        <option value="">all</option>
+        <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>draft</option>
+        <option value="ready" {% if status_filter == 'ready' %}selected{% endif %}>ready</option>
+      </select>
+    </label>
+  </form>
+</section>
+
+{% if materials %}
+<ul class="item-list">
+  {% for mat in materials %}
+  <li class="card-row">
+    <div>
+      <a href="{{ url_for('material_edit', mid=mat.id) }}" class="item-title">{{ mat.title }}</a>
+      <span class="meta">{{ mat.kind }} · <span class="pill {{ mat.status }}">{{ mat.status }}</span>{% if mat.public %} <span class="pill public">public</span>{% endif %} · updated {{ mat.updated_at[:10] }}</span>
+      {% if mat.body %}<p class="excerpt">{{ mat.body[:160] }}{% if mat.body|length > 160 %}…{% endif %}</p>{% endif %}
+    </div>
+    <span class="row-actions">
+      <a href="{{ url_for('material_edit', mid=mat.id) }}" class="link">Edit</a>
+      <a href="{{ url_for('material_delete', mid=mat.id) }}" class="link danger">Delete</a>
+    </span>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">No materials yet.</p>
+{% endif %}
+{% endblock %}

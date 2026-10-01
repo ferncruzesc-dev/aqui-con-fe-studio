@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+{% block title %}{% if material %}Edit material{% else %}New material{% endif %} — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="kicker">The archive</p>
+  <h1>{% if material %}Edit material{% else %}New material{% endif %}</h1>
+</section>
+
+<form method="post">
+  <label>Title
+    <input type="text" name="title" value="{{ material.title if material else '' }}" placeholder="Untitled" />
+  </label>
+  <div class="form-row">
+    <label>Kind
+      <select name="kind">
+        {% for k in kinds %}
+        <option value="{{ k }}" {% if material and material.kind == k %}selected{% endif %}>{{ k }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Status
+      <select name="status">
+        <option value="draft" {% if not material or material.status == 'draft' %}selected{% endif %}>draft</option>
+        <option value="ready" {% if material and material.status == 'ready' %}selected{% endif %}>ready</option>
+      </select>
+    </label>
+  </div>
+  <label class="check" style="margin-top: 1em;"><input type="checkbox" name="public" value="1" {% if material and material.public %}checked{% endif %} /> Public — appears in the constellation</label>
+  <label>Body
+    <textarea name="body" rows="14" placeholder="Write…">{{ material.body if material else '' }}</textarea>
+  </label>
+
+  {{ m.question_picker(questions, selected.questions) }}
+  {{ m.axis_picker(axes, selected.axes) }}
+  {{ m.project_picker(projects, selected.projects) }}
+
+  <div class="form-actions">
+    <button type="submit" class="btn">{% if material %}Save{% else %}Create{% endif %} material</button>
+    <a href="{{ url_for('material_list') }}" class="btn ghost">Cancel</a>
+  </div>
+</form>
+{% endblock %}

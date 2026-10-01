@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+{% block title %}{% if project %}Edit project{% else %}New project{% endif %} — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="kicker">The long works</p>
+  <h1>{% if project %}Edit project{% else %}New project{% endif %}</h1>
+</section>
+
+<form method="post">
+  <label>Title
+    <input type="text" name="title" value="{{ project.title if project else '' }}" placeholder="Untitled project" />
+  </label>
+  <label>Description
+    <textarea name="description" rows="5">{{ project.description if project else '' }}</textarea>
+  </label>
+  <div class="form-row">
+    <label>Status
+      <select name="status">
+        {% for s in ['active', 'resting', 'complete'] %}
+        <option value="{{ s }}" {% if project and project.status == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+  <label class="check" style="margin-top: 1em;"><input type="checkbox" name="public" value="1" {% if project and project.public %}checked{% endif %} /> Public — appears in the constellation</label>
+
+  {{ m.question_picker(questions, selected.questions) }}
+  {{ m.axis_picker(axes, selected.axes) }}
+
+  <div class="form-actions">
+    <button type="submit" class="btn">{% if project %}Save{% else %}Create{% endif %} project</button>
+    <a href="{{ url_for('project_list') }}" class="btn ghost">Cancel</a>
+  </div>
+</form>
+{% endblock %}

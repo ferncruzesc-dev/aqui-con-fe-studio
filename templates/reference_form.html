@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+{% block title %}{% if ref %}Edit reference{% else %}New reference{% endif %} — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="kicker">What feeds the work</p>
+  <h1>{% if ref %}Edit reference{% else %}New reference{% endif %}</h1>
+</section>
+
+<form method="post">
+  <label>Title
+    <input type="text" name="title" value="{{ ref.title if ref else '' }}" placeholder="Untitled" />
+  </label>
+  <div class="form-row">
+    <label>Creator
+      <input type="text" name="creator" value="{{ ref.creator if ref else '' }}" placeholder="Author, artist, director…" />
+    </label>
+    <label>Kind
+      <select name="kind">
+        {% for k in kinds %}
+        <option value="{{ k }}" {% if ref and ref.kind == k %}selected{% endif %}>{{ k }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>URL <span class="hint">(optional)</span>
+      <input type="text" name="url" value="{{ ref.url if ref else '' }}" placeholder="https://" />
+    </label>
+  </div>
+  <label>Notes
+    <textarea name="notes" rows="8" placeholder="Why does this matter to the work?">{{ ref.notes if ref else '' }}</textarea>
+  </label>
+
+  {{ m.question_picker(questions, selected.questions) }}
+  {{ m.axis_picker(axes, selected.axes) }}
+
+  <div class="form-actions">
+    <button type="submit" class="btn">{% if ref %}Save{% else %}Create{% endif %} reference</button>
+    <a href="{{ url_for('reference_list') }}" class="btn ghost">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -16,11 +16,16 @@
       {% if session.get('user') %}
       <nav class="main-nav" aria-label="Studio sections">
         <a href="{{ url_for('dashboard') }}">Home</a>
+        <a href="{{ url_for('question_list') }}">Questions</a>
+        <a href="{{ url_for('material_list') }}">Materials</a>
+        <a href="{{ url_for('project_list') }}">Projects</a>
+        <a href="{{ url_for('reference_list') }}">References</a>
         <a href="{{ url_for('journal_list') }}">Journal</a>
-        <a href="{{ url_for('archive') }}">Archive</a>
-        <a href="{{ url_for('room_page', room='omg-moments') }}">OMG!</a>
-        <a href="{{ url_for('room_page', room='video-diary') }}">Video diary</a>
-        <a href="{{ url_for('room_page', room='come-for-me') }}">coMe for Me</a>
+        {% for r in nav_rooms %}
+        <a href="{{ url_for('room_page', key=r.key) }}">{{ r.name.split()[0] }}</a>
+        {% endfor %}
+        <a href="{{ url_for('constellation_index') }}">Constellation</a>
+        <a href="{{ url_for('publish') }}">Publish</a>
         <a href="{{ url_for('logout') }}" class="logout">Log out</a>
       </nav>
       {% endif %}

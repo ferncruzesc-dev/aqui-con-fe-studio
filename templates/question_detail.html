@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Question — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="kicker">Question · {{ question.status }}{% if question.featured %} · ★ featured{% endif %}{% if question.public %} · public{% endif %}</p>
+  <h1>{{ question.question_text }}</h1>
+  {% if question.why_asking %}
+  <p class="why">{{ question.why_asking }}</p>
+  {% endif %}
+  <div class="form-actions">
+    <a href="{{ url_for('question_edit', qid=question.id) }}" class="btn small">Edit</a>
+    <a href="{{ url_for('question_delete', qid=question.id) }}" class="btn small danger-ghost">Delete</a>
+    {% if question.public %}
+    <a href="{{ url_for('constellation_question', qid=question.id) }}" class="btn small ghost">Public view →</a>
+    {% endif %}
+  </div>
+</section>
+
+<section>
+  <h2>Its constellation</h2>
+  {% if constellation.axes %}
+  <div class="chips">
+    {% for a in constellation.axes %}
+    <a class="chip" href="{{ url_for('constellation_axis', key=a.key) }}">{{ a.name }}</a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="hint">No related areas yet — link this question to the constellation.</p>
+  {% endif %}
+</section>
+
+{% macro group(title, items, kind) %}
+{% if items %}
+<h3 class="group-title">{{ title }}</h3>
+<ul class="item-list">
+  {% for it in items %}
+  <li>
+    {% if kind == 'material' %}
+    <a href="{{ url_for('material_edit', mid=it.id) }}" class="item-title">{{ it.title }}</a>
+    <span class="meta">{{ it.kind }} · <span class="pill {{ it.status }}">{{ it.status }}</span>{% if it.public %} <span class="pill public">public</span>{% endif %}</span>
+    {% elif kind == 'project' %}
+    <a href="{{ url_for('project_edit', pid=it.id) }}" class="item-title">{{ it.title }}</a>
+    <span class="meta">{{ it.status }}{% if it.public %} · <span class="pill public">public</span>{% endif %}</span>
+    {% elif kind == 'journal' %}
+    <a href="{{ url_for('journal_edit', entry_id=it.id) }}" class="item-title">{{ it.title }}</a>
+    <span class="meta">{{ it.kind }} · {{ it.entry_date }} · <span class="pill {{ it.status }}">{{ it.status }}</span></span>
+    {% elif kind == 'reference' %}
+    <a href="{{ url_for('reference_edit', rid=it.id) }}" class="item-title">{{ it.title }}</a>
+    <span class="meta">{{ it.kind }}{% if it.creator %} · {{ it.creator }}{% endif %}</span>
+    {% elif kind == 'piece' %}
+    <a href="{{ url_for('piece_edit', pid=it.id) }}" class="item-title">{{ it.title }}</a>
+    <span class="meta">{{ it.room_name }}{% if it.kind %} · {{ it.kind }}{% endif %} · <span class="pill {{ it.status }}">{{ it.status }}</span>{% if it.public %} <span class="pill public">public</span>{% endif %}</span>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endmacro %}
+
+{{ group('Materials', constellation.materials, 'material') }}
+{{ group('Projects', constellation.projects, 'project') }}
+{{ group('Journal', constellation.journal, 'journal') }}
+{{ group('References', constellation.references, 'reference') }}
+{{ group('Room pieces', constellation.pieces, 'piece') }}
+
+{% if not constellation.materials and not constellation.projects and not constellation.journal and not constellation.references and not constellation.pieces %}
+<p class="muted" style="margin-top: 2em;">Nothing is linked to this question yet. Link materials, projects, journal entries, references, and room pieces to it from their edit pages — and the constellation grows.</p>
+{% endif %}
+{% endblock %}

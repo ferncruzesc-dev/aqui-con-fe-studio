@@ -1,18 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Log in — aQui con fe Studio{% endblock %}
 {% block content %}
-<div class="auth-card">
+<section class="auth-card">
   <p class="kicker">aQui con fe Studio</p>
   <h1>Welcome back</h1>
-  <p class="lede">Enter your password to open your private writing desk.</p>
   {% if error %}<p class="error">{{ error }}</p>{% endif %}
-  <form method="post" action="{{ url_for('login') }}">
+  <form method="post">
     <label>Password
-      <input type="password" name="password" autocomplete="current-password" required autofocus />
+      <input type="password" name="password" autocomplete="current-password" required />
     </label>
     <div class="form-actions">
       <button type="submit" class="btn">Log in</button>
     </div>
   </form>
-</div>
+</section>
 {% endblock %}

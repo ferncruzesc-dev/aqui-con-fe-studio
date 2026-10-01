@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+{% block title %}{% if question %}Edit question{% else %}New question{% endif %} — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="kicker">The center of the constellation</p>
+  <h1>{% if question %}Edit question{% else %}New question{% endif %}</h1>
+</section>
+
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+<form method="post">
+  <label>Question
+    <textarea name="question_text" rows="3" required placeholder="What are you really asking?">{{ question.question_text if question else '' }}</textarea>
+  </label>
+
+  <label>Why am I asking?
+    <textarea name="why_asking" rows="3" placeholder="The pressure behind the question…">{{ question.why_asking if question else '' }}</textarea>
+  </label>
+
+  {{ m.axis_picker(axes, selected_axes) }}
+
+  <div class="form-row">
+    <label>Status
+      <select name="status">
+        {% for s in ['open', 'resting', 'closed'] %}
+        <option value="{{ s }}" {% if question and question.status == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+  <div class="check-row">
+    <label class="check"><input type="checkbox" name="featured" value="1" {% if question and question.featured %}checked{% endif %} /> Featured — may surface as THE QUESTION</label>
+    <label class="check"><input type="checkbox" name="public" value="1" {% if question and question.public %}checked{% endif %} /> Public — appears in the constellation</label>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn">{% if question %}Save question{% else %}Ask it{% endif %}</button>
+    <a href="{% if question %}{{ url_for('question_detail', qid=question.id) }}{% else %}{{ url_for('question_list') }}{% endif %}" class="btn ghost">Cancel</a>
+  </div>
+</form>
+{% endblock %}

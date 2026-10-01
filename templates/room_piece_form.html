@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+{% block title %}{% if piece %}Edit piece{% else %}New piece{% endif %} — {{ room.name }}{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="kicker">{{ room.name }}</p>
+  <h1>{% if piece %}Edit piece{% else %}New piece{% endif %}</h1>
+</section>
+
+<form method="post">
+  <label>Title
+    <input type="text" name="title" value="{{ piece.title if piece else '' }}" placeholder="Untitled" />
+  </label>
+
+  {% if room.key == 'diary' %}
+  <div class="form-row">
+    <label>Theme
+      <input type="text" name="theme" value="{{ extra.theme }}" placeholder="e.g. red lips, grief, becoming" />
+    </label>
+    <label>Date
+      <input type="date" name="diary_date" value="{{ extra.diary_date }}" />
+    </label>
+    <label>Status
+      <select name="status">
+        <option value="draft" {% if not piece or piece.status == 'draft' %}selected{% endif %}>draft</option>
+        <option value="ready" {% if piece and piece.status == 'ready' %}selected{% endif %}>ready</option>
+      </select>
+    </label>
+  </div>
+  {% else %}
+  <div class="form-row">
+    <label>Kind
+      <select name="kind">
+        {% for k in kinds %}
+        <option value="{{ k }}" {% if piece and piece.kind == k %}selected{% endif %}>{{ k }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Status
+      <select name="status">
+        <option value="draft" {% if not piece or piece.status == 'draft' %}selected{% endif %}>draft</option>
+        <option value="ready" {% if piece and piece.status == 'ready' %}selected{% endif %}>ready</option>
+      </select>
+    </label>
+  </div>
+  {% endif %}
+
+  <label class="check" style="margin-top: 1em;"><input type="checkbox" name="public" value="1" {% if piece and piece.public %}checked{% endif %} /> Public — appears in the constellation</label>
+
+  <label>{% if room.key == 'diary' %}Script / notes{% else %}Body{% endif %}
+    <textarea name="body" rows="14" placeholder="Write…">{{ piece.body if piece else '' }}</textarea>
+  </label>
+
+  {{ m.question_picker(questions, selected.questions) }}
+  {{ m.axis_picker(axes, selected.axes) }}
+
+  <div class="form-actions">
+    <button type="submit" class="btn">{% if piece %}Save{% else %}Create{% endif %} piece</button>
+    <a href="{{ url_for('room_page', key=room.key) }}" class="btn ghost">Cancel</a>
+  </div>
+</form>
+{% endblock %}

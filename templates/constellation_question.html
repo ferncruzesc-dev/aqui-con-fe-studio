@@ -1,0 +1,52 @@
+{% extends "public_base.html" %}
+{% block title %}A question — The Constellation{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="kicker"><a href="{{ url_for('constellation_index') }}" class="link">← The Constellation</a></p>
+  <p class="kicker" style="margin-top: 0.5em;">The Question</p>
+  <h1 style="font-style: italic;">{{ question.question_text }}</h1>
+  {% if question.why_asking %}
+  <p class="why">{{ question.why_asking }}</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2>Follow the constellation</h2>
+  {% if constellation.axes %}
+  <div class="chips">
+    {% for a in constellation.axes %}
+    <a class="chip" href="{{ url_for('constellation_axis', key=a.key) }}">{{ a.name }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+
+{% macro group(title, items, kind) %}
+{% if items %}
+<h3 class="group-title">{{ title }}</h3>
+<ul class="item-list">
+  {% for it in items %}
+  <li>
+    <span class="item-title">{{ it.title if kind != 'question' else it.question_text }}</span>
+    <span class="meta">
+      {% if kind == 'material' %}{{ it.kind }}
+      {% elif kind == 'project' %}{{ it.status }}
+      {% elif kind == 'piece' %}{{ it.room_name }}{% if it.kind %} · {{ it.kind }}{% endif %}
+      {% endif %}
+    </span>
+    {% set body = it.body if it.body is defined and it.body else it.description %}
+    {% if body %}<p class="excerpt">{{ body[:220] }}{% if body|length > 220 %}…{% endif %}</p>{% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endmacro %}
+
+{{ group('Materials', constellation.materials, 'material') }}
+{{ group('Projects', constellation.projects, 'project') }}
+{{ group('Room pieces', constellation.pieces, 'piece') }}
+
+{% if not constellation.materials and not constellation.projects and not constellation.pieces %}
+<p class="muted">This question's public constellation is still forming.</p>
+{% endif %}
+{% endblock %}

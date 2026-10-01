@@ -1,0 +1,60 @@
+{# Shared connection pickers: questions, axes, projects #}
+
+{% macro axis_picker(axes, selected) %}
+<fieldset class="picker">
+  <legend>Related areas</legend>
+  <div class="check-grid cols-4">
+    {% for a in axes %}
+    <label class="check">
+      <input type="checkbox" name="axis_ids" value="{{ a.id }}"
+             {% if a.id in selected %}checked{% endif %} />
+      <span>{{ a.name }}<br /><span class="sub">{{ a.tagline }}</span></span>
+    </label>
+    {% endfor %}
+  </div>
+</fieldset>
+{% endmacro %}
+
+{% macro question_picker(questions, selected) %}
+<fieldset class="picker">
+  <legend>Linked questions</legend>
+  {% if questions %}
+  <div class="check-grid">
+    {% for q in questions %}
+    <label class="check">
+      <input type="checkbox" name="question_ids" value="{{ q.id }}"
+             {% if q.id in selected %}checked{% endif %} />
+      <span>{{ q.question_text[:80] }}{% if q.question_text|length > 80 %}…{% endif %}<br />
+        <span class="sub">{{ q.status }}{% if q.featured %} · featured{% endif %}</span></span>
+    </label>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="hint">No questions yet — ask the first one.</p>
+  {% endif %}
+</fieldset>
+{% endmacro %}
+
+{% macro project_picker(projects, selected) %}
+<fieldset class="picker">
+  <legend>Linked projects</legend>
+  {% if projects %}
+  <div class="check-grid">
+    {% for p in projects %}
+    <label class="check">
+      <input type="checkbox" name="project_ids" value="{{ p.id }}"
+             {% if p.id in selected %}checked{% endif %} />
+      <span>{{ p.title }}<br /><span class="sub">{{ p.status }}</span></span>
+    </label>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="hint">No projects yet.</p>
+  {% endif %}
+</fieldset>
+{% endmacro %}
+
+{% macro flags(obj) %}
+<span class="pill {{ obj.status }}">{{ obj.status }}</span>
+{% if obj.public %}<span class="pill public">public</span>{% endif %}
+{% endmacro %}

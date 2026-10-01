@@ -6,6 +6,24 @@
   <h1>Here, with faith.</h1>
 </section>
 
+{% if the_question %}
+<section class="question-hero">
+  <p class="kicker">The Question</p>
+  <blockquote>{{ the_question.question_text }}</blockquote>
+  {% if the_question.why_asking %}
+  <p class="why">{{ the_question.why_asking }}</p>
+  {% endif %}
+  <div class="form-actions">
+    <a href="{{ url_for('question_detail', qid=the_question.id) }}" class="btn small">Open in the studio</a>
+    {% if the_question.public %}
+    <a href="{{ url_for('constellation_question', qid=the_question.id) }}" class="btn small ghost">Follow the constellation →</a>
+    {% else %}
+    <span class="hint">Mark it public to let visitors follow its constellation.</span>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
 <section class="capture card">
   <h2>Quick capture</h2>
   <p class="muted">A thought, a line, a fragment — saved as a field-notes draft.</p>
@@ -18,13 +36,55 @@
 </section>
 
 <section class="stats">
+  <div class="stat"><span class="stat-num">{{ counts.questions }}</span><span class="stat-label">questions</span></div>
+  <div class="stat"><span class="stat-num">{{ counts.materials }}</span><span class="stat-label">materials</span></div>
+  <div class="stat"><span class="stat-num">{{ counts.projects }}</span><span class="stat-label">projects</span></div>
   <div class="stat"><span class="stat-num">{{ counts.journal }}</span><span class="stat-label">journal entries</span></div>
-  <div class="stat"><span class="stat-num">{{ counts.pieces }}</span><span class="stat-label">archive pieces</span></div>
-  <div class="stat"><span class="stat-num">{{ counts.drafts }}</span><span class="stat-label">room drafts</span></div>
-  <div class="stat"><span class="stat-num">{{ counts.ready }}</span><span class="stat-label">marked ready</span></div>
+  <div class="stat"><span class="stat-num">{{ counts.references }}</span><span class="stat-label">references</span></div>
+  <div class="stat"><span class="stat-num">{{ counts.pieces }}</span><span class="stat-label">room pieces</span></div>
+  <div class="stat"><span class="stat-num">{{ counts.public }}</span><span class="stat-label">public</span></div>
 </section>
 
 <div class="columns">
+  <section>
+    <div class="section-head">
+      <h2>Recent questions</h2>
+      <a href="{{ url_for('question_list') }}" class="link">All →</a>
+    </div>
+    {% if recent_questions %}
+    <ul class="item-list">
+      {% for q in recent_questions %}
+      <li>
+        <a href="{{ url_for('question_detail', qid=q.id) }}" class="item-title">{{ q.question_text[:70] }}{% if q.question_text|length > 70 %}…{% endif %}</a>
+        <span class="meta">{{ q.status }}{% if q.featured %} · featured{% endif %}{% if q.public %} · public{% endif %}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No questions yet.</p>
+    {% endif %}
+    <p><a href="{{ url_for('question_new') }}" class="btn small ghost">New question</a></p>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Recent materials</h2>
+      <a href="{{ url_for('material_list') }}" class="link">All →</a>
+    </div>
+    {% if recent_materials %}
+    <ul class="item-list">
+      {% for m in recent_materials %}
+      <li>
+        <a href="{{ url_for('material_edit', mid=m.id) }}" class="item-title">{{ m.title }}</a>
+        <span class="meta">{{ m.kind }} · <span class="pill {{ m.status }}">{{ m.status }}</span>{% if m.public %} <span class="pill public">public</span>{% endif %}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No materials yet.</p>
+    {% endif %}
+  </section>
+
   <section>
     <div class="section-head">
       <h2>Recent journal</h2>
@@ -34,56 +94,14 @@
     <ul class="item-list">
       {% for e in recent_journal %}
       <li>
-        <a href="{{ url_for('journal_edit', entry_id=e.id) }}">{{ e.title }}</a>
-        <span class="meta">{{ e.type }} · {{ e.entry_date }} · <span class="pill {{ e.status }}">{{ e.status }}</span></span>
+        <a href="{{ url_for('journal_edit', entry_id=e.id) }}" class="item-title">{{ e.title }}</a>
+        <span class="meta">{{ e.kind }} · {{ e.entry_date }} · <span class="pill {{ e.status }}">{{ e.status }}</span></span>
       </li>
       {% endfor %}
     </ul>
     {% else %}
     <p class="muted">Nothing yet. Capture something above.</p>
     {% endif %}
-  </section>
-
-  <section>
-    <div class="section-head">
-      <h2>Recent archive pieces</h2>
-      <a href="{{ url_for('archive') }}" class="link">All →</a>
-    </div>
-    {% if recent_pieces %}
-    <ul class="item-list">
-      {% for p in recent_pieces %}
-      <li>
-        <a href="{{ url_for('piece_edit', piece_id=p.id) }}">{{ p.title }}</a>
-        <span class="meta">{{ p.type }}{% if p.collection_name %} · {{ p.collection_name }}{% endif %} · <span class="pill {{ p.status }}">{{ p.status }}</span></span>
-      </li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p class="muted">No pieces yet.</p>
-    {% endif %}
-  </section>
-
-  <section>
-    <div class="section-head">
-      <h2>Recent room drafts</h2>
-    </div>
-    {% if recent_drafts %}
-    <ul class="item-list">
-      {% for d in recent_drafts %}
-      <li>
-        <a href="{{ url_for('draft_edit', draft_id=d.id) }}">{{ d.title }}</a>
-        <span class="meta">{{ room_names.get(d.room, d.room) }} · <span class="pill {{ d.status }}">{{ d.status }}</span></span>
-      </li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p class="muted">No drafts yet.</p>
-    {% endif %}
-    <p class="room-links">
-      <a href="{{ url_for('room_page', room='omg-moments') }}" class="link">OMG! moments →</a><br />
-      <a href="{{ url_for('room_page', room='video-diary') }}" class="link">Video diary →</a><br />
-      <a href="{{ url_for('room_page', room='come-for-me') }}" class="link">coMe for Me →</a>
-    </p>
   </section>
 </div>
 {% endblock %}

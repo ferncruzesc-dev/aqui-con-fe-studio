@@ -1,0 +1,43 @@
+{% extends "public_base.html" %}
+{% block title %}{{ axis.name }} — The Constellation{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="kicker"><a href="{{ url_for('constellation_index') }}" class="link">← The Constellation</a></p>
+  <h1>{{ axis.name }}</h1>
+  <p class="lede"><em>{{ axis.tagline }}</em> — {{ axis.description }}</p>
+</section>
+
+{% macro group(title, items, kind) %}
+{% if items %}
+<h3 class="group-title">{{ title }}</h3>
+<ul class="item-list">
+  {% for it in items %}
+  <li>
+    {% if kind == 'question' %}
+    <a href="{{ url_for('constellation_question', qid=it.id) }}" class="item-title">{{ it.question_text }}</a>
+    {% else %}
+    <span class="item-title">{{ it.title }}</span>
+    {% endif %}
+    <span class="meta">
+      {% if kind == 'material' %}{{ it.kind }}
+      {% elif kind == 'project' %}{{ it.status }}
+      {% elif kind == 'piece' %}{{ it.room_name }}{% if it.kind %} · {{ it.kind }}{% endif %}
+      {% elif kind == 'question' %}{{ it.status }}{% endif %}
+    </span>
+    {% set body = it.body if it.body is defined and it.body else (it.question_text if kind == 'question' else it.description) %}
+    {% if body %}<p class="excerpt">{{ body[:220] }}{% if body|length > 220 %}…{% endif %}</p>{% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endmacro %}
+
+{{ group('Questions', items.questions, 'question') }}
+{{ group('Materials', items.materials, 'material') }}
+{{ group('Projects', items.projects, 'project') }}
+{{ group('Room pieces', items.pieces, 'piece') }}
+
+{% if not items.questions and not items.materials and not items.projects and not items.pieces %}
+<p class="muted">Nothing public here yet.</p>
+{% endif %}
+{% endblock %}

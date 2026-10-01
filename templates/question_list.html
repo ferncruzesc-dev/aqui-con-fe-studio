@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Questions — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="page-head">
+    <div>
+      <p class="kicker">The center of the constellation</p>
+      <h1>Questions</h1>
+    </div>
+    <a href="{{ url_for('question_new') }}" class="btn">New question</a>
+  </div>
+  <form method="get" class="filters">
+    <label>Status
+      <select name="status" onchange="this.form.submit()">
+        <option value="">all</option>
+        {% for s in statuses %}
+        <option value="{{ s }}" {% if s == status_filter %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </form>
+</section>
+
+{% if questions %}
+<ul class="item-list">
+  {% for q in questions %}
+  <li class="card-row">
+    <div>
+      <a href="{{ url_for('question_detail', qid=q.id) }}" class="item-title">{{ q.question_text }}</a>
+      <span class="meta">{{ q.status }}{% if q.featured %} · ★ featured{% endif %}{% if q.public %} · public{% endif %} · {{ axis_counts.get(q.id, 0) }} areas · asked {{ q.created_at[:10] }}</span>
+    </div>
+    <span class="row-actions">
+      <a href="{{ url_for('question_edit', qid=q.id) }}" class="link">Edit</a>
+      <a href="{{ url_for('question_delete', qid=q.id) }}" class="link danger">Delete</a>
+    </span>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">No questions yet. Ask the first one.</p>
+{% endif %}
+{% endblock %}
