@@ -2,7 +2,8 @@
 
 A private, self-hosted writing studio built as a living archive /
 creative ecosystem: Questions sit at the center, and everything
-(materials, projects, journal entries, references, room pieces) links
+(materials, projects, journal entries, references, room pieces,
+voice pieces, serial chapters, newsletter issues) links
 to questions, to constellation axes, and to projects.
 
 Single-user Flask app with SQLite storage. Run with:
@@ -88,6 +89,17 @@ JOURNAL_KINDS = [
     "research notes",
     "faith",
 ]
+VOICE_KINDS = [
+    "reading",
+    "conversation",
+    "interview",
+    "audio note",
+    "live session",
+    "podcast episode",
+]
+VOICE_STATUSES = ["idea", "draft", "recorded", "ready", "published"]
+SERIAL_STATUSES = ["draft", "ready", "published"]
+NEWSLETTER_STATUSES = ["draft", "ready", "sent"]
 QUESTION_STATUSES = ["open", "resting", "closed"]
 
 SEED_QUESTION = "What do we inherit that we did not choose?"
@@ -232,6 +244,70 @@ CREATE TABLE IF NOT EXISTS room_piece_axes (
     piece_id INTEGER NOT NULL,
     axis_id INTEGER NOT NULL,
     PRIMARY KEY (piece_id, axis_id)
+);
+CREATE TABLE IF NOT EXISTS voice_pieces (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    kind TEXT NOT NULL DEFAULT 'reading',
+    body TEXT NOT NULL DEFAULT '',
+    audio_url TEXT NOT NULL DEFAULT '',
+    duration TEXT NOT NULL DEFAULT '',
+    transcript TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'idea',
+    public INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS voice_piece_questions (
+    voice_piece_id INTEGER NOT NULL,
+    question_id INTEGER NOT NULL,
+    PRIMARY KEY (voice_piece_id, question_id)
+);
+CREATE TABLE IF NOT EXISTS voice_piece_axes (
+    voice_piece_id INTEGER NOT NULL,
+    axis_id INTEGER NOT NULL,
+    PRIMARY KEY (voice_piece_id, axis_id)
+);
+CREATE TABLE IF NOT EXISTS serial_chapters (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    number INTEGER NOT NULL DEFAULT 0,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'draft',
+    publish_target TEXT NOT NULL DEFAULT '',
+    public INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS serial_chapter_questions (
+    chapter_id INTEGER NOT NULL,
+    question_id INTEGER NOT NULL,
+    PRIMARY KEY (chapter_id, question_id)
+);
+CREATE TABLE IF NOT EXISTS serial_chapter_axes (
+    chapter_id INTEGER NOT NULL,
+    axis_id INTEGER NOT NULL,
+    PRIMARY KEY (chapter_id, axis_id)
+);
+CREATE TABLE IF NOT EXISTS newsletter_issues (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    issue_no INTEGER NOT NULL DEFAULT 0,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'draft',
+    send_target TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS newsletter_issue_questions (
+    issue_id INTEGER NOT NULL,
+    question_id INTEGER NOT NULL,
+    PRIMARY KEY (issue_id, question_id)
+);
+CREATE TABLE IF NOT EXISTS newsletter_issue_axes (
+    issue_id INTEGER NOT NULL,
+    axis_id INTEGER NOT NULL,
+    PRIMARY KEY (issue_id, axis_id)
 );
 """
 
@@ -437,6 +513,20 @@ def constellation_for_question(db, qid, public_only=False):
         " JOIN rooms rm ON rm.id = rp.room_id"
         f" WHERE rqp.question_id = ? {pub} ORDER BY rp.updated_at DESC", (qid,)
     ).fetchall()
+    pub = "AND v.public = 1" if public_only else ""
+    voice = db.execute(
+        "SELECT v.* FROM voice_pieces v JOIN voice_piece_questions vq ON vq.voice_piece_id = v.id"
+        f" WHERE vq.question_id = ? {pub} ORDER BY v.updated_at DESC", (qid,)
+    ).fetchall()
+    pub = "AND s.public = 1" if public_only else ""
+    serial = db.execute(
+        "SELECT s.* FROM serial_chapters s JOIN serial_chapter_questions sq ON sq.chapter_id = s.id"
+        f" WHERE sq.question_id = ? {pub} ORDER BY s.number, s.updated_at DESC", (qid,)
+    ).fetchall()
+    newsletter = [] if public_only else db.execute(
+        "SELECT n.* FROM newsletter_issues n JOIN newsletter_issue_questions nq ON nq.issue_id = n.id"
+        " WHERE nq.question_id = ? ORDER BY n.issue_no DESC", (qid,)
+    ).fetchall()
     axes = db.execute(
         "SELECT a.* FROM axes a JOIN question_axes qa ON qa.axis_id = a.id"
         " WHERE qa.question_id = ? ORDER BY a.sort_order", (qid,)
@@ -448,6 +538,9 @@ def constellation_for_question(db, qid, public_only=False):
         "journal": journal,
         "references": references,
         "pieces": pieces,
+        "voice": voice,
+        "serial": serial,
+        "newsletter": newsletter,
     }
 
 
@@ -474,11 +567,23 @@ def public_axis_items(db, axis_id):
         " WHERE rpa.axis_id = ? AND rp.public = 1 ORDER BY rp.updated_at DESC",
         (axis_id,),
     ).fetchall()
+    voice = db.execute(
+        "SELECT v.* FROM voice_pieces v JOIN voice_piece_axes va ON va.voice_piece_id = v.id"
+        " WHERE va.axis_id = ? AND v.public = 1 ORDER BY v.updated_at DESC",
+        (axis_id,),
+    ).fetchall()
+    serial = db.execute(
+        "SELECT s.* FROM serial_chapters s JOIN serial_chapter_axes sa ON sa.chapter_id = s.id"
+        " WHERE sa.axis_id = ? AND s.public = 1 ORDER BY s.number",
+        (axis_id,),
+    ).fetchall()
     return {
         "questions": questions,
         "materials": materials,
         "projects": projects,
         "pieces": pieces,
+        "voice": voice,
+        "serial": serial,
     }
 
 
@@ -578,10 +683,15 @@ def dashboard():
         "journal": db.execute("SELECT COUNT(*) c FROM journal_entries").fetchone()["c"],
         "references": db.execute('SELECT COUNT(*) c FROM "references"').fetchone()["c"],
         "pieces": db.execute("SELECT COUNT(*) c FROM room_pieces").fetchone()["c"],
+        "voice": db.execute("SELECT COUNT(*) c FROM voice_pieces").fetchone()["c"],
+        "serial": db.execute("SELECT COUNT(*) c FROM serial_chapters").fetchone()["c"],
+        "newsletter": db.execute("SELECT COUNT(*) c FROM newsletter_issues").fetchone()["c"],
         "public": db.execute(
             "SELECT (SELECT COUNT(*) FROM materials WHERE public=1) + "
             "(SELECT COUNT(*) FROM projects WHERE public=1) + "
             "(SELECT COUNT(*) FROM room_pieces WHERE public=1) + "
+            "(SELECT COUNT(*) FROM voice_pieces WHERE public=1) + "
+            "(SELECT COUNT(*) FROM serial_chapters WHERE public=1) + "
             "(SELECT COUNT(*) FROM questions WHERE public=1) AS c"
         ).fetchone()["c"],
     }
@@ -1193,6 +1303,382 @@ def journal_delete(entry_id):
     )
 
 
+
+
+# --------------------------------------------------------------- voice ----
+
+def _to_int(raw, default=0):
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        return default
+
+
+@app.route("/voice")
+@login_required
+def voice_list():
+    db = get_db()
+    kind_filter = request.args.get("kind", "")
+    status_filter = request.args.get("status", "")
+    query = "SELECT * FROM voice_pieces WHERE 1=1"
+    params = []
+    if kind_filter in VOICE_KINDS:
+        query += " AND kind = ?"
+        params.append(kind_filter)
+    if status_filter in VOICE_STATUSES:
+        query += " AND status = ?"
+        params.append(status_filter)
+    query += " ORDER BY updated_at DESC"
+    pieces = db.execute(query, params).fetchall()
+    return render_template(
+        "voice_list.html", pieces=pieces, kinds=VOICE_KINDS,
+        statuses=VOICE_STATUSES, kind_filter=kind_filter,
+        status_filter=status_filter,
+    )
+
+
+def _voice_form_common(db, piece):
+    axes, questions, _projects = pickers(db)
+    selected = {"axes": set(), "questions": set()}
+    if piece is not None:
+        vid = piece["id"]
+        selected["axes"] = get_links(db, "voice_piece_axes", "voice_piece_id", vid)
+        selected["questions"] = get_links(db, "voice_piece_questions", "voice_piece_id", vid)
+    return axes, questions, selected
+
+
+@app.route("/voice/new", methods=["GET", "POST"])
+@login_required
+def voice_new():
+    db = get_db()
+    axes, questions, selected = _voice_form_common(db, None)
+    if request.method == "POST":
+        kind = request.form.get("kind") or "reading"
+        if kind not in VOICE_KINDS:
+            kind = "reading"
+        status = request.form.get("status") or "idea"
+        if status not in VOICE_STATUSES:
+            status = "idea"
+        title = (request.form.get("title") or "").strip() or "Untitled"
+        public = 1 if request.form.get("public") else 0
+        cur = db.execute(
+            "INSERT INTO voice_pieces (title, kind, body, audio_url, duration,"
+            " transcript, status, public, created_at, updated_at)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (title, kind, request.form.get("body") or "",
+             request.form.get("audio_url") or "", request.form.get("duration") or "",
+             request.form.get("transcript") or "", status, public,
+             now_iso(), now_iso()),
+        )
+        vid = cur.lastrowid
+        save_links(db, "voice_piece_questions", "voice_piece_id", vid, "question_id",
+                   id_list(request.form, "question_ids"))
+        save_links(db, "voice_piece_axes", "voice_piece_id", vid, "axis_id",
+                   id_list(request.form, "axis_ids"))
+        db.commit()
+        return redirect(url_for("voice_list"))
+    return render_template(
+        "voice_form.html", piece=None, kinds=VOICE_KINDS, statuses=VOICE_STATUSES,
+        axes=axes, questions=questions, selected=selected,
+    )
+
+
+@app.route("/voice/<int:vid>/edit", methods=["GET", "POST"])
+@login_required
+def voice_edit(vid):
+    db = get_db()
+    piece = db.execute(
+        "SELECT * FROM voice_pieces WHERE id = ?", (vid,)
+    ).fetchone()
+    if piece is None:
+        abort(404)
+    axes, questions, selected = _voice_form_common(db, piece)
+    if request.method == "POST":
+        kind = request.form.get("kind") or piece["kind"]
+        if kind not in VOICE_KINDS:
+            kind = piece["kind"]
+        status = request.form.get("status") or "idea"
+        if status not in VOICE_STATUSES:
+            status = "idea"
+        title = (request.form.get("title") or "").strip() or "Untitled"
+        public = 1 if request.form.get("public") else 0
+        db.execute(
+            "UPDATE voice_pieces SET title=?, kind=?, body=?, audio_url=?,"
+            " duration=?, transcript=?, status=?, public=?, updated_at=? WHERE id=?",
+            (title, kind, request.form.get("body") or "",
+             request.form.get("audio_url") or "", request.form.get("duration") or "",
+             request.form.get("transcript") or "", status, public, now_iso(), vid),
+        )
+        save_links(db, "voice_piece_questions", "voice_piece_id", vid, "question_id",
+                   id_list(request.form, "question_ids"))
+        save_links(db, "voice_piece_axes", "voice_piece_id", vid, "axis_id",
+                   id_list(request.form, "axis_ids"))
+        db.commit()
+        return redirect(url_for("voice_list"))
+    return render_template(
+        "voice_form.html", piece=piece, kinds=VOICE_KINDS, statuses=VOICE_STATUSES,
+        axes=axes, questions=questions, selected=selected,
+    )
+
+
+@app.route("/voice/<int:vid>/delete", methods=["GET", "POST"])
+@login_required
+def voice_delete(vid):
+    db = get_db()
+    piece = db.execute(
+        "SELECT * FROM voice_pieces WHERE id = ?", (vid,)
+    ).fetchone()
+    if piece is None:
+        abort(404)
+    if request.method == "POST":
+        db.execute("DELETE FROM voice_piece_questions WHERE voice_piece_id = ?", (vid,))
+        db.execute("DELETE FROM voice_piece_axes WHERE voice_piece_id = ?", (vid,))
+        db.execute("DELETE FROM voice_pieces WHERE id = ?", (vid,))
+        db.commit()
+        return redirect(url_for("voice_list"))
+    return render_template(
+        "confirm_delete.html",
+        item_label=f'voice piece "{piece["title"]}"',
+        cancel_url=url_for("voice_list"),
+    )
+
+
+# -------------------------------------------------------------- serial ----
+
+@app.route("/serial")
+@login_required
+def serial_list():
+    db = get_db()
+    status_filter = request.args.get("status", "")
+    query = "SELECT * FROM serial_chapters WHERE 1=1"
+    params = []
+    if status_filter in SERIAL_STATUSES:
+        query += " AND status = ?"
+        params.append(status_filter)
+    query += " ORDER BY number, updated_at DESC"
+    chapters = db.execute(query, params).fetchall()
+    return render_template(
+        "serial_list.html", chapters=chapters, statuses=SERIAL_STATUSES,
+        status_filter=status_filter,
+    )
+
+
+def _serial_form_common(db, chapter):
+    axes, questions, _projects = pickers(db)
+    selected = {"axes": set(), "questions": set()}
+    if chapter is not None:
+        cid = chapter["id"]
+        selected["axes"] = get_links(db, "serial_chapter_axes", "chapter_id", cid)
+        selected["questions"] = get_links(db, "serial_chapter_questions", "chapter_id", cid)
+    return axes, questions, selected
+
+
+@app.route("/serial/new", methods=["GET", "POST"])
+@login_required
+def serial_new():
+    db = get_db()
+    axes, questions, selected = _serial_form_common(db, None)
+    if request.method == "POST":
+        status = request.form.get("status") or "draft"
+        if status not in SERIAL_STATUSES:
+            status = "draft"
+        title = (request.form.get("title") or "").strip() or "Untitled"
+        public = 1 if request.form.get("public") else 0
+        cur = db.execute(
+            "INSERT INTO serial_chapters (number, title, body, status,"
+            " publish_target, public, created_at, updated_at)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (_to_int(request.form.get("number")), title,
+             request.form.get("body") or "", status,
+             request.form.get("publish_target") or "", public,
+             now_iso(), now_iso()),
+        )
+        cid = cur.lastrowid
+        save_links(db, "serial_chapter_questions", "chapter_id", cid, "question_id",
+                   id_list(request.form, "question_ids"))
+        save_links(db, "serial_chapter_axes", "chapter_id", cid, "axis_id",
+                   id_list(request.form, "axis_ids"))
+        db.commit()
+        return redirect(url_for("serial_list"))
+    return render_template(
+        "serial_form.html", chapter=None, statuses=SERIAL_STATUSES,
+        axes=axes, questions=questions, selected=selected,
+    )
+
+
+@app.route("/serial/<int:cid>/edit", methods=["GET", "POST"])
+@login_required
+def serial_edit(cid):
+    db = get_db()
+    chapter = db.execute(
+        "SELECT * FROM serial_chapters WHERE id = ?", (cid,)
+    ).fetchone()
+    if chapter is None:
+        abort(404)
+    axes, questions, selected = _serial_form_common(db, chapter)
+    if request.method == "POST":
+        status = request.form.get("status") or "draft"
+        if status not in SERIAL_STATUSES:
+            status = "draft"
+        title = (request.form.get("title") or "").strip() or "Untitled"
+        public = 1 if request.form.get("public") else 0
+        db.execute(
+            "UPDATE serial_chapters SET number=?, title=?, body=?, status=?,"
+            " publish_target=?, public=?, updated_at=? WHERE id=?",
+            (_to_int(request.form.get("number"), chapter["number"]), title,
+             request.form.get("body") or "", status,
+             request.form.get("publish_target") or "", public, now_iso(), cid),
+        )
+        save_links(db, "serial_chapter_questions", "chapter_id", cid, "question_id",
+                   id_list(request.form, "question_ids"))
+        save_links(db, "serial_chapter_axes", "chapter_id", cid, "axis_id",
+                   id_list(request.form, "axis_ids"))
+        db.commit()
+        return redirect(url_for("serial_list"))
+    return render_template(
+        "serial_form.html", chapter=chapter, statuses=SERIAL_STATUSES,
+        axes=axes, questions=questions, selected=selected,
+    )
+
+
+@app.route("/serial/<int:cid>/delete", methods=["GET", "POST"])
+@login_required
+def serial_delete(cid):
+    db = get_db()
+    chapter = db.execute(
+        "SELECT * FROM serial_chapters WHERE id = ?", (cid,)
+    ).fetchone()
+    if chapter is None:
+        abort(404)
+    if request.method == "POST":
+        db.execute("DELETE FROM serial_chapter_questions WHERE chapter_id = ?", (cid,))
+        db.execute("DELETE FROM serial_chapter_axes WHERE chapter_id = ?", (cid,))
+        db.execute("DELETE FROM serial_chapters WHERE id = ?", (cid,))
+        db.commit()
+        return redirect(url_for("serial_list"))
+    return render_template(
+        "confirm_delete.html",
+        item_label=f'serial chapter "{chapter["title"]}"',
+        cancel_url=url_for("serial_list"),
+    )
+
+
+# ---------------------------------------------------------- newsletter ----
+
+@app.route("/newsletter")
+@login_required
+def newsletter_list():
+    db = get_db()
+    status_filter = request.args.get("status", "")
+    query = "SELECT * FROM newsletter_issues WHERE 1=1"
+    params = []
+    if status_filter in NEWSLETTER_STATUSES:
+        query += " AND status = ?"
+        params.append(status_filter)
+    query += " ORDER BY issue_no DESC, updated_at DESC"
+    issues = db.execute(query, params).fetchall()
+    return render_template(
+        "newsletter_list.html", issues=issues, statuses=NEWSLETTER_STATUSES,
+        status_filter=status_filter,
+    )
+
+
+def _newsletter_form_common(db, issue):
+    axes, questions, _projects = pickers(db)
+    selected = {"axes": set(), "questions": set()}
+    if issue is not None:
+        nid = issue["id"]
+        selected["axes"] = get_links(db, "newsletter_issue_axes", "issue_id", nid)
+        selected["questions"] = get_links(db, "newsletter_issue_questions", "issue_id", nid)
+    return axes, questions, selected
+
+
+@app.route("/newsletter/new", methods=["GET", "POST"])
+@login_required
+def newsletter_new():
+    db = get_db()
+    axes, questions, selected = _newsletter_form_common(db, None)
+    if request.method == "POST":
+        status = request.form.get("status") or "draft"
+        if status not in NEWSLETTER_STATUSES:
+            status = "draft"
+        title = (request.form.get("title") or "").strip() or "Untitled"
+        cur = db.execute(
+            "INSERT INTO newsletter_issues (issue_no, title, body, status,"
+            " send_target, created_at, updated_at)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (_to_int(request.form.get("issue_no")), title,
+             request.form.get("body") or "", status,
+             request.form.get("send_target") or "", now_iso(), now_iso()),
+        )
+        nid = cur.lastrowid
+        save_links(db, "newsletter_issue_questions", "issue_id", nid, "question_id",
+                   id_list(request.form, "question_ids"))
+        save_links(db, "newsletter_issue_axes", "issue_id", nid, "axis_id",
+                   id_list(request.form, "axis_ids"))
+        db.commit()
+        return redirect(url_for("newsletter_list"))
+    return render_template(
+        "newsletter_form.html", issue=None, statuses=NEWSLETTER_STATUSES,
+        axes=axes, questions=questions, selected=selected,
+    )
+
+
+@app.route("/newsletter/<int:nid>/edit", methods=["GET", "POST"])
+@login_required
+def newsletter_edit(nid):
+    db = get_db()
+    issue = db.execute(
+        "SELECT * FROM newsletter_issues WHERE id = ?", (nid,)
+    ).fetchone()
+    if issue is None:
+        abort(404)
+    axes, questions, selected = _newsletter_form_common(db, issue)
+    if request.method == "POST":
+        status = request.form.get("status") or "draft"
+        if status not in NEWSLETTER_STATUSES:
+            status = "draft"
+        title = (request.form.get("title") or "").strip() or "Untitled"
+        db.execute(
+            "UPDATE newsletter_issues SET issue_no=?, title=?, body=?, status=?,"
+            " send_target=?, updated_at=? WHERE id=?",
+            (_to_int(request.form.get("issue_no"), issue["issue_no"]), title,
+             request.form.get("body") or "", status,
+             request.form.get("send_target") or "", now_iso(), nid),
+        )
+        save_links(db, "newsletter_issue_questions", "issue_id", nid, "question_id",
+                   id_list(request.form, "question_ids"))
+        save_links(db, "newsletter_issue_axes", "issue_id", nid, "axis_id",
+                   id_list(request.form, "axis_ids"))
+        db.commit()
+        return redirect(url_for("newsletter_list"))
+    return render_template(
+        "newsletter_form.html", issue=issue, statuses=NEWSLETTER_STATUSES,
+        axes=axes, questions=questions, selected=selected,
+    )
+
+
+@app.route("/newsletter/<int:nid>/delete", methods=["GET", "POST"])
+@login_required
+def newsletter_delete(nid):
+    db = get_db()
+    issue = db.execute(
+        "SELECT * FROM newsletter_issues WHERE id = ?", (nid,)
+    ).fetchone()
+    if issue is None:
+        abort(404)
+    if request.method == "POST":
+        db.execute("DELETE FROM newsletter_issue_questions WHERE issue_id = ?", (nid,))
+        db.execute("DELETE FROM newsletter_issue_axes WHERE issue_id = ?", (nid,))
+        db.execute("DELETE FROM newsletter_issues WHERE id = ?", (nid,))
+        db.commit()
+        return redirect(url_for("newsletter_list"))
+    return render_template(
+        "confirm_delete.html",
+        item_label=f'newsletter letter "{issue["title"]}"',
+        cancel_url=url_for("newsletter_list"),
+    )
+
 # -------------------------------------------------------------- rooms ----
 
 def room_or_404(key):
@@ -1409,6 +1895,8 @@ def publish():
         "materials": db.execute("SELECT COUNT(*) c FROM materials WHERE public=1").fetchone()["c"],
         "projects": db.execute("SELECT COUNT(*) c FROM projects WHERE public=1").fetchone()["c"],
         "pieces": db.execute("SELECT COUNT(*) c FROM room_pieces WHERE public=1").fetchone()["c"],
+        "voice": db.execute("SELECT COUNT(*) c FROM voice_pieces WHERE public=1").fetchone()["c"],
+        "serial": db.execute("SELECT COUNT(*) c FROM serial_chapters WHERE public=1").fetchone()["c"],
     }
     result = None
     if request.method == "POST":

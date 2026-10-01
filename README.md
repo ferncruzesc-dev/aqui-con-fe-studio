@@ -32,6 +32,13 @@ Eight axes, flowing QUESTION → MEMORY → STUDY → CRAFT → CREACIÓN → NE
 - **Journal** — dated entries of every kind.
 - **Rooms** — OMG! moments, the aQui con fe video diary, coMe for Me, each with
   its own identity and piece structure.
+- **Voice** — the house, out loud. Readings, conversations, interviews, audio
+  notes, live sessions, podcast episodes — each with a script, an audio link,
+  a transcript, and a shape from *idea* to *published*.
+- **Serial** — a story in installments. Numbered chapters with arrival dates,
+  written toward the every-two-weeks rhythm.
+- **Newsletter** — letters to the ones who stay. Monthly letters, drafted
+  gently, sent when ready.
 - **Connections** — every item links to questions, axes, and (for materials) projects.
 - **Public constellation** (`/constellation/`, no login) — the eight axes as
   dynamic cards, axis pages, and follow-the-question trails. Only items flagged
