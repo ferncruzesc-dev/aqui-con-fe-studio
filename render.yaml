@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: aqui-con-fe-studio
+    name: aqui-con-fe-studio-v2
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
