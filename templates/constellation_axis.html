@@ -24,6 +24,8 @@
       {% elif kind == 'piece' %}{{ it.room_name }}{% if it.kind %} · {{ it.kind }}{% endif %}
       {% elif kind == 'voice' %}{{ it.kind }}
       {% elif kind == 'serial' %}serial{% if it.number %} · ch. {{ it.number }}{% endif %}
+      {% elif kind == 'poem' %}poem{% if it.release_month %} · {{ it.release_month }}{% endif %}
+      {% elif kind == 'story' %}{% if it.story_title %}{{ it.story_title }} · {% endif %}§{{ it.section_no }}
       {% elif kind == 'question' %}{{ it.status }}{% endif %}
     </span>
     {% set body = it.body if it.body is defined and it.body else (it.question_text if kind == 'question' else it.description) %}
@@ -40,8 +42,10 @@
 {{ group('Room pieces', items.pieces, 'piece') }}
 {{ group('Voice', items.voice, 'voice') }}
 {{ group('Serial', items.serial, 'serial') }}
+{{ group('Poems', items.poems, 'poem') }}
+{{ group('Short stories', items.stories, 'story') }}
 
-{% if not items.questions and not items.materials and not items.projects and not items.pieces and not items.voice and not items.serial %}
+{% if not items.questions and not items.materials and not items.projects and not items.pieces and not items.voice and not items.serial and not items.poems and not items.stories %}
 <p class="muted">Nothing public here yet.</p>
 {% endif %}
 {% endblock %}

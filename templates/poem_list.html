@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Poems — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="page-head">
+    <div>
+      <p class="kicker">Small weather systems.</p>
+      <h1>Poems</h1>
+      <p class="lede">Two poems a month — language distilled until it burns.</p>
+    </div>
+    <a href="{{ url_for('poem_new') }}" class="btn">New poem</a>
+  </div>
+  <form method="get" class="filters">
+    <label>Shape
+      <select name="status" onchange="this.form.submit()">
+        <option value="">all</option>
+        {% for s in statuses %}
+        <option value="{{ s }}" {% if s == status_filter %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </form>
+</section>
+
+{% if poems %}
+<ul class="item-list">
+  {% for p in poems %}
+  <li class="card-row">
+    <div>
+      <a href="{{ url_for('poem_edit', pid=p.id) }}" class="item-title">{{ p.title }}</a>
+      <span class="meta">{% if p.release_month %}for {{ p.release_month }} · {% endif %}<span class="pill {{ p.status }}">{{ p.status }}</span>{% if p.public %} <span class="pill public">public</span>{% endif %}</span>
+      {% if p.body %}<p class="excerpt">{{ p.body[:160] }}{% if p.body|length > 160 %}…{% endif %}</p>{% endif %}
+    </div>
+    <span class="row-actions">
+      <a href="{{ url_for('poem_edit', pid=p.id) }}" class="link">Edit</a>
+      <a href="{{ url_for('poem_delete', pid=p.id) }}" class="link danger">Delete</a>
+    </span>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">No poems yet. The first one is still deciding how to arrive.</p>
+{% endif %}
+{% endblock %}

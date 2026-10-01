@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+{% block title %}{% if poem %}Edit poem{% else %}New poem{% endif %} — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="kicker">Small weather systems.</p>
+  <h1>{% if poem %}Edit poem{% else %}New poem{% endif %}</h1>
+</section>
+
+<form method="post">
+  <div class="form-row">
+    <label>Title
+      <input type="text" name="title" value="{{ poem.title if poem else '' }}" placeholder="Name the weather" />
+    </label>
+  </div>
+  <div class="form-row">
+    <label>Shape
+      <select name="status">
+        {% for s in statuses %}
+        <option value="{{ s }}" {% if poem and poem.status == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>For the month of
+      <input type="month" name="release_month" value="{{ poem.release_month if poem else '' }}" />
+    </label>
+  </div>
+  <label>The poem
+    <textarea name="body" rows="14" placeholder="Write the poem — distill it.">{{ poem.body if poem else '' }}</textarea>
+  </label>
+  <label class="check" style="margin-top: 1em;"><input type="checkbox" name="public" value="1" {% if poem and poem.public %}checked{% endif %} /> Public — appears in the constellation</label>
+
+  {{ m.question_picker(questions, selected.questions) }}
+  {{ m.axis_picker(axes, selected.axes) }}
+
+  <div class="form-actions">
+    <button type="submit" class="btn">{% if poem %}Save{% else %}Create{% endif %} poem</button>
+    <a href="{{ url_for('poem_list') }}" class="btn ghost">Cancel</a>
+  </div>
+</form>
+{% endblock %}

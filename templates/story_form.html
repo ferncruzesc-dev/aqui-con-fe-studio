@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+{% block title %}{% if section %}Edit story section{% else %}New story section{% endif %} — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="kicker">Longer roads, walked slowly.</p>
+  <h1>{% if section %}Edit story section{% else %}New story section{% endif %}</h1>
+</section>
+
+<form method="post">
+  <div class="form-row">
+    <label>Story
+      <input type="text" name="story_title" value="{{ section.story_title if section else '' }}" placeholder="Which story does this section belong to" />
+    </label>
+    <label style="max-width: 8em;">Section №
+      <input type="number" name="section_no" min="0" value="{{ section.section_no if section else '' }}" placeholder="1" />
+    </label>
+  </div>
+  <div class="form-row">
+    <label>Section title
+      <input type="text" name="title" value="{{ section.title if section else '' }}" placeholder="Name this stretch of the road" />
+    </label>
+  </div>
+  <div class="form-row">
+    <label>Shape
+      <select name="status">
+        {% for s in statuses %}
+        <option value="{{ s }}" {% if section and section.status == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Arrives by
+      <input type="date" name="release_target" value="{{ section.release_target if section else '' }}" />
+    </label>
+  </div>
+  <label>The section
+    <textarea name="body" rows="16" placeholder="Write the section — let it end mid-breath.">{{ section.body if section else '' }}</textarea>
+  </label>
+  <label class="check" style="margin-top: 1em;"><input type="checkbox" name="public" value="1" {% if section and section.public %}checked{% endif %} /> Public — appears in the constellation</label>
+
+  {{ m.question_picker(questions, selected.questions) }}
+  {{ m.axis_picker(axes, selected.axes) }}
+
+  <div class="form-actions">
+    <button type="submit" class="btn">{% if section %}Save{% else %}Create{% endif %} section</button>
+    <a href="{{ url_for('story_list') }}" class="btn ghost">Cancel</a>
+  </div>
+</form>
+{% endblock %}

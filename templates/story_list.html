@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Short stories — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="page-head">
+    <div>
+      <p class="kicker">Longer roads, walked slowly.</p>
+      <h1>Short stories</h1>
+      <p class="lede">A section of a short story every two months — arrive unhurried.</p>
+    </div>
+    <a href="{{ url_for('story_new') }}" class="btn">New section</a>
+  </div>
+  <form method="get" class="filters">
+    <label>Shape
+      <select name="status" onchange="this.form.submit()">
+        <option value="">all</option>
+        {% for s in statuses %}
+        <option value="{{ s }}" {% if s == status_filter %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </form>
+</section>
+
+{% if sections %}
+<ul class="item-list">
+  {% for s in sections %}
+  <li class="card-row">
+    <div>
+      <a href="{{ url_for('story_edit', sid=s.id) }}" class="item-title">{% if s.story_title %}{{ s.story_title }} — {% endif %}{% if s.section_no %}§{{ s.section_no }} · {% endif %}{{ s.title }}</a>
+      <span class="meta">{% if s.release_target %}by {{ s.release_target }} · {% endif %}<span class="pill {{ s.status }}">{{ s.status }}</span>{% if s.public %} <span class="pill public">public</span>{% endif %}</span>
+      {% if s.body %}<p class="excerpt">{{ s.body[:160] }}{% if s.body|length > 160 %}…{% endif %}</p>{% endif %}
+    </div>
+    <span class="row-actions">
+      <a href="{{ url_for('story_edit', sid=s.id) }}" class="link">Edit</a>
+      <a href="{{ url_for('story_delete', sid=s.id) }}" class="link danger">Delete</a>
+    </span>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">No story sections yet. The road hasn't opened.</p>
+{% endif %}
+{% endblock %}

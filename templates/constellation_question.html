@@ -34,6 +34,8 @@
       {% elif kind == 'piece' %}{{ it.room_name }}{% if it.kind %} · {{ it.kind }}{% endif %}
       {% elif kind == 'voice' %}{{ it.kind }}
       {% elif kind == 'serial' %}serial{% if it.number %} · ch. {{ it.number }}{% endif %}
+      {% elif kind == 'poem' %}poem{% if it.release_month %} · {{ it.release_month }}{% endif %}
+      {% elif kind == 'story' %}{% if it.story_title %}{{ it.story_title }} · {% endif %}§{{ it.section_no }}
       {% endif %}
     </span>
     {% set body = it.body if it.body is defined and it.body else it.description %}
@@ -49,8 +51,10 @@
 {{ group('Room pieces', constellation.pieces, 'piece') }}
 {{ group('Voice', constellation.voice, 'voice') }}
 {{ group('Serial', constellation.serial, 'serial') }}
+{{ group('Poems', constellation.poems, 'poem') }}
+{{ group('Short stories', constellation.stories, 'story') }}
 
-{% if not constellation.materials and not constellation.projects and not constellation.pieces and not constellation.voice and not constellation.serial %}
+{% if not constellation.materials and not constellation.projects and not constellation.pieces and not constellation.voice and not constellation.serial and not constellation.poems and not constellation.stories %}
 <p class="muted">This question's public constellation is still forming.</p>
 {% endif %}
 {% endblock %}
