@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Projects — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="page-head">
+    <div>
+      <p class="kicker">The long works</p>
+      <h1>Projects</h1>
+    </div>
+    <a href="{{ url_for('project_new') }}" class="btn">New project</a>
+  </div>
+</section>
+
+{% if projects %}
+<ul class="item-list">
+  {% for p in projects %}
+  <li class="card-row">
+    <div>
+      <a href="{{ url_for('project_edit', pid=p.id) }}" class="item-title">{{ p.title }}</a>
+      <span class="meta">{{ p.status }}{% if p.public %} · <span class="pill public">public</span>{% endif %}</span>
+      {% if p.description %}<p class="excerpt">{{ p.description[:160] }}{% if p.description|length > 160 %}…{% endif %}</p>{% endif %}
+    </div>
+    <span class="row-actions">
+      <a href="{{ url_for('project_edit', pid=p.id) }}" class="link">Edit</a>
+      <a href="{{ url_for('project_delete', pid=p.id) }}" class="link danger">Delete</a>
+    </span>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">No projects yet.</p>
+{% endif %}
+{% endblock %}
