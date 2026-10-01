@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Voice — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="page-head">
+    <div>
+      <p class="kicker">The house, out loud.</p>
+      <h1>Voice</h1>
+      <p class="lede">Readings, conversations, interviews, audio notes, live sessions, the podcast — everything the house says out loud, kept where it can be shaped.</p>
+    </div>
+    <a href="{{ url_for('voice_new') }}" class="btn">New voice piece</a>
+  </div>
+  <form method="get" class="filters">
+    <label>Kind
+      <select name="kind" onchange="this.form.submit()">
+        <option value="">all</option>
+        {% for k in kinds %}
+        <option value="{{ k }}" {% if k == kind_filter %}selected{% endif %}>{{ k }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Shape
+      <select name="status" onchange="this.form.submit()">
+        <option value="">all</option>
+        {% for s in statuses %}
+        <option value="{{ s }}" {% if s == status_filter %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </form>
+</section>
+
+{% if pieces %}
+<ul class="item-list">
+  {% for p in pieces %}
+  <li class="card-row">
+    <div>
+      <a href="{{ url_for('voice_edit', vid=p.id) }}" class="item-title">{{ p.title }}</a>
+      <span class="meta">{{ p.kind }}{% if p.duration %} · {{ p.duration }}{% endif %} · <span class="pill {{ p.status }}">{{ p.status }}</span>{% if p.public %} <span class="pill public">public</span>{% endif %}</span>
+      {% if p.body %}<p class="excerpt">{{ p.body[:160] }}{% if p.body|length > 160 %}…{% endif %}</p>{% endif %}
+    </div>
+    <span class="row-actions">
+      <a href="{{ url_for('voice_edit', vid=p.id) }}" class="link">Edit</a>
+      <a href="{{ url_for('voice_delete', vid=p.id) }}" class="link danger">Delete</a>
+    </span>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">Nothing spoken yet — give the house its voice.</p>
+{% endif %}
+{% endblock %}

@@ -22,6 +22,8 @@
       {% if kind == 'material' %}{{ it.kind }}
       {% elif kind == 'project' %}{{ it.status }}
       {% elif kind == 'piece' %}{{ it.room_name }}{% if it.kind %} · {{ it.kind }}{% endif %}
+      {% elif kind == 'voice' %}{{ it.kind }}
+      {% elif kind == 'serial' %}serial{% if it.number %} · ch. {{ it.number }}{% endif %}
       {% elif kind == 'question' %}{{ it.status }}{% endif %}
     </span>
     {% set body = it.body if it.body is defined and it.body else (it.question_text if kind == 'question' else it.description) %}
@@ -36,8 +38,10 @@
 {{ group('Materials', items.materials, 'material') }}
 {{ group('Projects', items.projects, 'project') }}
 {{ group('Room pieces', items.pieces, 'piece') }}
+{{ group('Voice', items.voice, 'voice') }}
+{{ group('Serial', items.serial, 'serial') }}
 
-{% if not items.questions and not items.materials and not items.projects and not items.pieces %}
+{% if not items.questions and not items.materials and not items.projects and not items.pieces and not items.voice and not items.serial %}
 <p class="muted">Nothing public here yet.</p>
 {% endif %}
 {% endblock %}

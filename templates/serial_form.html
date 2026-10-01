@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+{% block title %}{% if chapter %}Edit chapter{% else %}New chapter{% endif %} — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="kicker">A story, in installments.</p>
+  <h1>{% if chapter %}Edit chapter{% else %}New chapter{% endif %}</h1>
+</section>
+
+<form method="post">
+  <div class="form-row">
+    <label style="max-width: 8em;">Chapter №
+      <input type="number" name="number" min="0" value="{{ chapter.number if chapter else '' }}" placeholder="1" />
+    </label>
+    <label>Title
+      <input type="text" name="title" value="{{ chapter.title if chapter else '' }}" placeholder="Name this stretch of the road" />
+    </label>
+  </div>
+  <div class="form-row">
+    <label>Shape
+      <select name="status">
+        {% for s in statuses %}
+        <option value="{{ s }}" {% if chapter and chapter.status == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Arrives by
+      <input type="date" name="publish_target" value="{{ chapter.publish_target if chapter else '' }}" />
+    </label>
+  </div>
+  <label>The chapter
+    <textarea name="body" rows="16" placeholder="Write the chapter — let it end mid-breath.">{{ chapter.body if chapter else '' }}</textarea>
+  </label>
+  <label class="check" style="margin-top: 1em;"><input type="checkbox" name="public" value="1" {% if chapter and chapter.public %}checked{% endif %} /> Public — appears in the constellation</label>
+
+  {{ m.question_picker(questions, selected.questions) }}
+  {{ m.axis_picker(axes, selected.axes) }}
+
+  <div class="form-actions">
+    <button type="submit" class="btn">{% if chapter %}Save{% else %}Create{% endif %} chapter</button>
+    <a href="{{ url_for('serial_list') }}" class="btn ghost">Cancel</a>
+  </div>
+</form>
+{% endblock %}

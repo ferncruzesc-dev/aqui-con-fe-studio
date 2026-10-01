@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+{% block title %}{% if piece %}Edit voice piece{% else %}New voice piece{% endif %} — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="kicker">The house, out loud.</p>
+  <h1>{% if piece %}Edit voice piece{% else %}New voice piece{% endif %}</h1>
+</section>
+
+<form method="post">
+  <label>Title
+    <input type="text" name="title" value="{{ piece.title if piece else '' }}" placeholder="What shall this one be called?" />
+  </label>
+  <div class="form-row">
+    <label>Kind
+      <select name="kind">
+        {% for k in kinds %}
+        <option value="{{ k }}" {% if piece and piece.kind == k %}selected{% endif %}>{{ k }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Shape
+      <select name="status">
+        {% for s in statuses %}
+        <option value="{{ s }}" {% if piece and piece.status == s %}selected{% endif %}{% if not piece and s == 'idea' %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+  <label>Script &amp; notes
+    <textarea name="body" rows="10" placeholder="Speak… — a script, a sketch, a direction for the voice.">{{ piece.body if piece else '' }}</textarea>
+  </label>
+  <div class="form-row">
+    <label>Audio
+      <input type="text" name="audio_url" value="{{ piece.audio_url if piece else '' }}" placeholder="A link to the recording, when it exists" />
+    </label>
+    <label>Duration
+      <input type="text" name="duration" value="{{ piece.duration if piece else '' }}" placeholder="e.g. 12:40" />
+    </label>
+  </div>
+  <label>Transcript
+    <textarea name="transcript" rows="6" placeholder="Every word, kept — for the record, and the echo.">{{ piece.transcript if piece else '' }}</textarea>
+  </label>
+  <label class="check" style="margin-top: 1em;"><input type="checkbox" name="public" value="1" {% if piece and piece.public %}checked{% endif %} /> Public — let it sound in the constellation</label>
+
+  {{ m.question_picker(questions, selected.questions) }}
+  {{ m.axis_picker(axes, selected.axes) }}
+
+  <div class="form-actions">
+    <button type="submit" class="btn">{% if piece %}Save{% else %}Create{% endif %} voice piece</button>
+    <a href="{{ url_for('voice_list') }}" class="btn ghost">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -50,6 +50,15 @@
     {% elif kind == 'piece' %}
     <a href="{{ url_for('piece_edit', pid=it.id) }}" class="item-title">{{ it.title }}</a>
     <span class="meta">{{ it.room_name }}{% if it.kind %} · {{ it.kind }}{% endif %} · <span class="pill {{ it.status }}">{{ it.status }}</span>{% if it.public %} <span class="pill public">public</span>{% endif %}</span>
+    {% elif kind == 'voice' %}
+    <a href="{{ url_for('voice_edit', vid=it.id) }}" class="item-title">{{ it.title }}</a>
+    <span class="meta">{{ it.kind }} · <span class="pill {{ it.status }}">{{ it.status }}</span>{% if it.public %} <span class="pill public">public</span>{% endif %}</span>
+    {% elif kind == 'serial' %}
+    <a href="{{ url_for('serial_edit', cid=it.id) }}" class="item-title">{% if it.number %}Ch. {{ it.number }} — {% endif %}{{ it.title }}</a>
+    <span class="meta">serial · <span class="pill {{ it.status }}">{{ it.status }}</span>{% if it.public %} <span class="pill public">public</span>{% endif %}</span>
+    {% elif kind == 'newsletter' %}
+    <a href="{{ url_for('newsletter_edit', nid=it.id) }}" class="item-title">{% if it.issue_no %}№ {{ it.issue_no }} — {% endif %}{{ it.title }}</a>
+    <span class="meta">newsletter · <span class="pill {{ it.status }}">{{ it.status }}</span></span>
     {% endif %}
   </li>
   {% endfor %}
@@ -62,8 +71,11 @@
 {{ group('Journal', constellation.journal, 'journal') }}
 {{ group('References', constellation.references, 'reference') }}
 {{ group('Room pieces', constellation.pieces, 'piece') }}
+{{ group('Voice', constellation.voice, 'voice') }}
+{{ group('Serial', constellation.serial, 'serial') }}
+{{ group('Newsletter', constellation.newsletter, 'newsletter') }}
 
-{% if not constellation.materials and not constellation.projects and not constellation.journal and not constellation.references and not constellation.pieces %}
-<p class="muted" style="margin-top: 2em;">Nothing is linked to this question yet. Link materials, projects, journal entries, references, and room pieces to it from their edit pages — and the constellation grows.</p>
+{% if not constellation.materials and not constellation.projects and not constellation.journal and not constellation.references and not constellation.pieces and not constellation.voice and not constellation.serial and not constellation.newsletter %}
+<p class="muted" style="margin-top: 2em;">Nothing is linked to this question yet. Link materials, projects, journal entries, references, room pieces, voice pieces, serial chapters, and newsletter letters to it from their edit pages — and the constellation grows.</p>
 {% endif %}
 {% endblock %}

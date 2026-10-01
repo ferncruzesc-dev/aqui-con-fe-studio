@@ -21,6 +21,9 @@
         <a href="{{ url_for('project_list') }}">Projects</a>
         <a href="{{ url_for('reference_list') }}">References</a>
         <a href="{{ url_for('journal_list') }}">Journal</a>
+        <a href="{{ url_for('voice_list') }}">Voice</a>
+        <a href="{{ url_for('serial_list') }}">Serial</a>
+        <a href="{{ url_for('newsletter_list') }}">Newsletter</a>
         {% for r in nav_rooms %}
         <a href="{{ url_for('room_page', key=r.key) }}">{{ r.name.split()[0] }}</a>
         {% endfor %}

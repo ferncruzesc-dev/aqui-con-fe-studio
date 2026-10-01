@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Serial — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="page-head">
+    <div>
+      <p class="kicker">A story, in installments.</p>
+      <h1>Serial</h1>
+      <p class="lede">One chapter every two weeks — the long story, arriving like weather.</p>
+    </div>
+    <a href="{{ url_for('serial_new') }}" class="btn">New chapter</a>
+  </div>
+  <form method="get" class="filters">
+    <label>Shape
+      <select name="status" onchange="this.form.submit()">
+        <option value="">all</option>
+        {% for s in statuses %}
+        <option value="{{ s }}" {% if s == status_filter %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </form>
+</section>
+
+{% if chapters %}
+<ul class="item-list">
+  {% for c in chapters %}
+  <li class="card-row">
+    <div>
+      <a href="{{ url_for('serial_edit', cid=c.id) }}" class="item-title">{% if c.number %}Ch. {{ c.number }} — {% endif %}{{ c.title }}</a>
+      <span class="meta">{% if c.publish_target %}by {{ c.publish_target }} · {% endif %}<span class="pill {{ c.status }}">{{ c.status }}</span>{% if c.public %} <span class="pill public">public</span>{% endif %}</span>
+      {% if c.body %}<p class="excerpt">{{ c.body[:160] }}{% if c.body|length > 160 %}…{% endif %}</p>{% endif %}
+    </div>
+    <span class="row-actions">
+      <a href="{{ url_for('serial_edit', cid=c.id) }}" class="link">Edit</a>
+      <a href="{{ url_for('serial_delete', cid=c.id) }}" class="link danger">Delete</a>
+    </span>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">No chapters yet. The story is still gathering itself.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+{% block title %}{% if issue %}Edit letter{% else %}New letter{% endif %} — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="kicker">Letters to the ones who stay.</p>
+  <h1>{% if issue %}Edit letter{% else %}New letter{% endif %}</h1>
+</section>
+
+<form method="post">
+  <div class="form-row">
+    <label style="max-width: 8em;">Letter №
+      <input type="number" name="issue_no" min="0" value="{{ issue.issue_no if issue else '' }}" placeholder="1" />
+    </label>
+    <label>Title
+      <input type="text" name="title" value="{{ issue.title if issue else '' }}" placeholder="What is this month asking?" />
+    </label>
+  </div>
+  <div class="form-row">
+    <label>Shape
+      <select name="status">
+        {% for s in statuses %}
+        <option value="{{ s }}" {% if issue and issue.status == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Send by
+      <input type="date" name="send_target" value="{{ issue.send_target if issue else '' }}" />
+    </label>
+  </div>
+  <label>The letter
+    <textarea name="body" rows="16" placeholder="Write the letter — once a month, in their inbox. Begin like you're writing to a friend.">{{ issue.body if issue else '' }}</textarea>
+  </label>
+
+  {{ m.question_picker(questions, selected.questions) }}
+  {{ m.axis_picker(axes, selected.axes) }}
+
+  <div class="form-actions">
+    <button type="submit" class="btn">{% if issue %}Save{% else %}Create{% endif %} letter</button>
+    <a href="{{ url_for('newsletter_list') }}" class="btn ghost">Cancel</a>
+  </div>
+</form>
+{% endblock %}

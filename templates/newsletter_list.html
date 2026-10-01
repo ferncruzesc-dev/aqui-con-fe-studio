@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Newsletter — aQui con fe Studio{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="page-head">
+    <div>
+      <p class="kicker">Letters to the ones who stay.</p>
+      <h1>Newsletter</h1>
+      <p class="lede">Once a month, in your inbox — what the month taught, gathered gently.</p>
+    </div>
+    <a href="{{ url_for('newsletter_new') }}" class="btn">New letter</a>
+  </div>
+  <form method="get" class="filters">
+    <label>Shape
+      <select name="status" onchange="this.form.submit()">
+        <option value="">all</option>
+        {% for s in statuses %}
+        <option value="{{ s }}" {% if s == status_filter %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </form>
+</section>
+
+{% if issues %}
+<ul class="item-list">
+  {% for n in issues %}
+  <li class="card-row">
+    <div>
+      <a href="{{ url_for('newsletter_edit', nid=n.id) }}" class="item-title">{% if n.issue_no %}№ {{ n.issue_no }} — {% endif %}{{ n.title }}</a>
+      <span class="meta">{% if n.send_target %}send by {{ n.send_target }} · {% endif %}<span class="pill {{ n.status }}">{{ n.status }}</span></span>
+      {% if n.body %}<p class="excerpt">{{ n.body[:160] }}{% if n.body|length > 160 %}…{% endif %}</p>{% endif %}
+    </div>
+    <span class="row-actions">
+      <a href="{{ url_for('newsletter_edit', nid=n.id) }}" class="link">Edit</a>
+      <a href="{{ url_for('newsletter_delete', nid=n.id) }}" class="link danger">Delete</a>
+    </span>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">No letters yet — the inbox is listening.</p>
+{% endif %}
+{% endblock %}
