@@ -71,7 +71,33 @@
     </ul>
     {% endif %}
 
-    {% if not items.questions and not items.materials and not items.projects and not items.pieces %}
+    {% if items.voice %}
+    <h3 class="group-title">Voice</h3>
+    <ul class="item-list">
+      {% for it in items.voice %}
+      <li>
+        <span class="item-title">{{ it.title }}</span>
+        <span class="meta">{{ it.kind }}{% if it.duration %} · {{ it.duration }}{% endif %}</span>
+        {% if it.excerpt %}<p class="excerpt">{{ it.excerpt }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if items.serial %}
+    <h3 class="group-title">Serial</h3>
+    <ul class="item-list">
+      {% for it in items.serial %}
+      <li>
+        <span class="item-title">{% if it.number %}Ch. {{ it.number }} — {% endif %}{{ it.title }}</span>
+        <span class="meta">serial</span>
+        {% if it.excerpt %}<p class="excerpt">{{ it.excerpt }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if not items.questions and not items.materials and not items.projects and not items.pieces and not items.voice and not items.serial %}
     <p class="muted">Nothing public here yet.</p>
     {% endif %}
   </main>

@@ -72,7 +72,33 @@
     </ul>
     {% endif %}
 
-    {% if not constellation.materials and not constellation.projects and not constellation.pieces %}
+    {% if constellation.voice %}
+    <h3 class="group-title">Voice</h3>
+    <ul class="item-list">
+      {% for it in constellation.voice %}
+      <li>
+        <span class="item-title">{{ it.title }}</span>
+        <span class="meta">{{ it.kind }}{% if it.duration %} · {{ it.duration }}{% endif %}</span>
+        {% if it.excerpt %}<p class="excerpt">{{ it.excerpt }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if constellation.serial %}
+    <h3 class="group-title">Serial</h3>
+    <ul class="item-list">
+      {% for it in constellation.serial %}
+      <li>
+        <span class="item-title">{% if it.number %}Ch. {{ it.number }} — {% endif %}{{ it.title }}</span>
+        <span class="meta">serial</span>
+        {% if it.excerpt %}<p class="excerpt">{{ it.excerpt }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if not constellation.materials and not constellation.projects and not constellation.pieces and not constellation.voice and not constellation.serial %}
     <p class="muted">This question's public constellation is still forming.</p>
     {% endif %}
   </main>
