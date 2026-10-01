@@ -110,6 +110,44 @@ h3.group-title { font-family: var(--mono); font-size: 0.85rem; text-transform: u
 .columns { display: grid; gap: 2em; margin-top: 2em; }
 @media (min-width: 760px) { .columns { grid-template-columns: 1fr 1fr 1fr; } }
 
+/* constellation */
+.constellation {
+  margin: 2.5em 0;
+  padding: 1.5em 0 0;
+  border-top: 1px solid var(--line);
+}
+.section-intro { margin-bottom: 1.25em; }
+.section-intro .kicker { margin-top: 0; }
+.constellation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+.constellation-item {
+  min-height: 142px;
+  padding: 18px;
+  background: var(--surface);
+}
+.constellation-item dt {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+}
+.constellation-item dd {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+.constellation-item dd span { color: var(--gold-deep); }
+@media (min-width: 760px) { .constellation-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .constellation-grid { grid-template-columns: 1fr; } .constellation-item { min-height: auto; } }
+
 /* cards & lists */
 .card {
   background: var(--surface);

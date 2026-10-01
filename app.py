@@ -12,7 +12,8 @@ from datetime import datetime, timedelta, timezone
 from functools import wraps
 
 from flask import (
-    Flask, abort, g, redirect, render_template, request, session, url_for,
+    Flask, abort, g, redirect, render_template, request, send_from_directory,
+    session, url_for,
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -44,8 +45,14 @@ ROOM_SLUGS = {
                     "Faith · sex · gender · reading · performance"),
 }
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=BASE_DIR, static_folder=None)
 app.permanent_session_lifetime = timedelta(days=30)
+
+
+@app.get("/static/style.css", endpoint="static")
+def stylesheet():
+    """Serve the single stylesheet while templates live beside the app module."""
+    return send_from_directory(BASE_DIR, "style.css")
 
 
 def get_secret_key():
