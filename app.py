@@ -19,16 +19,18 @@ from datetime import datetime, timedelta, timezone
 from functools import wraps
 
 from flask import (
-    Flask, abort, g, redirect, render_template, request, session, url_for,
+    Flask, abort, g, redirect, render_template, request, send_file, session, url_for,
 )
 from jinja2 import Environment, FileSystemLoader
 from markupsafe import escape, Markup
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.environ.get("STUDIO_DATA_DIR", os.path.join(BASE_DIR, "data"))
 DB_PATH = os.environ.get("STUDIO_DB", os.path.join(DATA_DIR, "studio.db"))
 EXPORT_DIR = os.path.join(BASE_DIR, "export", "constellation")
+UPLOAD_DIR = os.path.join(DATA_DIR, "uploads")
 
 # ---------------------------------------------------------------- data ----
 
@@ -141,6 +143,8 @@ CREATE TABLE IF NOT EXISTS materials (
     body TEXT NOT NULL DEFAULT '',
     status TEXT NOT NULL DEFAULT 'draft',
     public INTEGER NOT NULL DEFAULT 0,
+    file_path TEXT NOT NULL DEFAULT '',
+    file_name TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
@@ -357,6 +361,7 @@ CREATE TABLE IF NOT EXISTS story_section_axes (
 
 app = Flask(__name__)
 app.permanent_session_lifetime = timedelta(days=30)
+app.config["MAX_CONTENT_LENGTH"] = 48 * 1024 * 1024  # 48 MB uploads
 
 
 def nl2br(value):
@@ -448,7 +453,48 @@ def seed_data(db):
 def init_db():
     db = get_db()
     db.executescript(SCHEMA)
+    _migrate(db)
     seed_data(db)
+
+
+def _migrate(db):
+    """Add columns to existing tables without touching their data."""
+    want = {
+        "materials": [("file_path", "TEXT NOT NULL DEFAULT ''"),
+                      ("file_name", "TEXT NOT NULL DEFAULT ''")],
+    }
+    for table, cols in want.items():
+        have = {r["name"] for r in db.execute(f"PRAGMA table_info({table})").fetchall()}
+        for name, ddl in cols:
+            if name not in have:
+                db.execute(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}")
+    db.commit()
+
+
+def _save_upload(file_storage):
+    """Store an uploaded file; returns (relative_path, original_name)."""
+    original = (file_storage.filename or "").strip()
+    safe = secure_filename(original) or "upload"
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+    token = secrets.token_hex(4)
+    stored = f"{stamp}-{token}-{safe}"
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    dest = os.path.join(UPLOAD_DIR, stored)
+    file_storage.save(dest)
+    rel = os.path.relpath(dest, DATA_DIR)
+    return rel, original
+
+
+def _delete_upload(rel_path):
+    if not rel_path:
+        return
+    # keep deletions inside the data dir
+    abs_path = os.path.normpath(os.path.join(DATA_DIR, rel_path))
+    if abs_path.startswith(os.path.normpath(DATA_DIR) + os.sep) and os.path.isfile(abs_path):
+        try:
+            os.remove(abs_path)
+        except OSError:
+            pass
 
 
 # ------------------------------------------------------------ helpers ----
@@ -986,6 +1032,13 @@ def material_new():
              1 if request.form.get("public") else 0, now_iso(), now_iso()),
         )
         mid = cur.lastrowid
+        upload = request.files.get("upload")
+        if upload is not None and (upload.filename or "").strip():
+            rel_path, orig_name = _save_upload(upload)
+            db.execute(
+                "UPDATE materials SET file_path = ?, file_name = ?, updated_at = ? WHERE id = ?",
+                (rel_path, orig_name, now_iso(), mid),
+            )
         save_links(db, "material_questions", "material_id", mid, "question_id",
                    id_list(request.form, "question_ids"))
         save_links(db, "material_axes", "material_id", mid, "axis_id",
@@ -1021,6 +1074,20 @@ def material_edit(mid):
             (title, kind, request.form.get("body") or "", status,
              1 if request.form.get("public") else 0, now_iso(), mid),
         )
+        upload = request.files.get("upload")
+        if upload is not None and (upload.filename or "").strip():
+            _delete_upload(material["file_path"] or "")
+            rel_path, orig_name = _save_upload(upload)
+            db.execute(
+                "UPDATE materials SET file_path = ?, file_name = ?, updated_at = ? WHERE id = ?",
+                (rel_path, orig_name, now_iso(), mid),
+            )
+        elif request.form.get("remove_file"):
+            _delete_upload(material["file_path"] or "")
+            db.execute(
+                "UPDATE materials SET file_path = '', file_name = '', updated_at = ? WHERE id = ?",
+                (now_iso(), mid),
+            )
         save_links(db, "material_questions", "material_id", mid, "question_id",
                    id_list(request.form, "question_ids"))
         save_links(db, "material_axes", "material_id", mid, "axis_id",
@@ -1035,6 +1102,23 @@ def material_edit(mid):
     )
 
 
+@app.route("/materials/<int:mid>/file")
+@login_required
+def material_file(mid):
+    db = get_db()
+    material = db.execute(
+        "SELECT file_path, file_name FROM materials WHERE id = ?", (mid,)
+    ).fetchone()
+    if material is None or not material["file_path"]:
+        abort(404)
+    abs_path = os.path.normpath(os.path.join(DATA_DIR, material["file_path"]))
+    if not abs_path.startswith(os.path.normpath(DATA_DIR) + os.sep):
+        abort(404)
+    if not os.path.isfile(abs_path):
+        abort(404)
+    return send_file(abs_path, download_name=material["file_name"] or "download")
+
+
 @app.route("/materials/<int:mid>/delete", methods=["GET", "POST"])
 @login_required
 def material_delete(mid):
@@ -1045,6 +1129,7 @@ def material_delete(mid):
     if request.method == "POST":
         for table in ["material_questions", "material_axes", "material_projects"]:
             db.execute(f"DELETE FROM {table} WHERE material_id = ?", (mid,))
+        _delete_upload(material["file_path"] or "")
         db.execute("DELETE FROM materials WHERE id = ?", (mid,))
         db.commit()
         return redirect(url_for("material_list"))

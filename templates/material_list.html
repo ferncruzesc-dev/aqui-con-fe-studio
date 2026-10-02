@@ -35,7 +35,7 @@
   <li class="card-row">
     <div>
       <a href="{{ url_for('material_edit', mid=mat.id) }}" class="item-title">{{ mat.title }}</a>
-      <span class="meta">{{ mat.kind }} · <span class="pill {{ mat.status }}">{{ mat.status }}</span>{% if mat.public %} <span class="pill public">public</span>{% endif %} · updated {{ mat.updated_at[:10] }}</span>
+      <span class="meta">{{ mat.kind }} · <span class="pill {{ mat.status }}">{{ mat.status }}</span>{% if mat.public %} <span class="pill public">public</span>{% endif %}{% if mat.file_path %} · <a href="{{ url_for('material_file', mid=mat.id) }}" class="link">📎 {{ mat.file_name or 'file' }}</a>{% endif %} · updated {{ mat.updated_at[:10] }}</span>
       {% if mat.body %}<p class="excerpt">{{ mat.body[:160] }}{% if mat.body|length > 160 %}…{% endif %}</p>{% endif %}
     </div>
     <span class="row-actions">

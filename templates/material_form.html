@@ -7,7 +7,7 @@
   <h1>{% if material %}Edit material{% else %}New material{% endif %}</h1>
 </section>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
   <label>Title
     <input type="text" name="title" value="{{ material.title if material else '' }}" placeholder="Untitled" />
   </label>
@@ -29,6 +29,13 @@
   <label class="check" style="margin-top: 1em;"><input type="checkbox" name="public" value="1" {% if material and material.public %}checked{% endif %} /> Public — appears in the constellation</label>
   <label>Body
     <textarea name="body" rows="14" placeholder="Write…">{{ material.body if material else '' }}</textarea>
+  </label>
+  <label>Attach a file
+    <input type="file" name="upload" />
+    {% if material and material.file_path %}
+    <span class="meta">Currently attached: <a href="{{ url_for('material_file', mid=material.id) }}">{{ material.file_name or 'download' }}</a></span>
+    <label class="check"><input type="checkbox" name="remove_file" value="1" /> Remove the attached file</label>
+    {% endif %}
   </label>
 
   {{ m.question_picker(questions, selected.questions) }}
